@@ -133,7 +133,7 @@ def is_terminal_residue(sequence: str, residue_position: int) -> bool:
     """
     return residue_position == 1 or residue_position == len(sequence)
 
-def update_residue_mapping_for_terminal_split(residue_mapping: Dict, chain_id: str, 
+def update_residue_mapping_for_terminal_split(residue_mapping: Dict, chain_id_orig: str, 
                                             split_position: int, sequence_length: int,
                                             is_c_terminal: bool) -> None:
     """
@@ -141,7 +141,7 @@ def update_residue_mapping_for_terminal_split(residue_mapping: Dict, chain_id: s
     
     Args:
         residue_mapping: The residue mapping dictionary to update
-        chain_id: Original chain ID
+        chain_id_orig: Original chain ID
         split_position: Position where the split occurs
         sequence_length: Length of the original sequence
         is_c_terminal: True if splitting at C-terminal, False for N-terminal
@@ -150,20 +150,20 @@ def update_residue_mapping_for_terminal_split(residue_mapping: Dict, chain_id: s
         # C-terminal split: chain keeps positions 1 to split_position-1
         # Ligand gets the last residue
         for pos in range(1, split_position):
-            residue_mapping[chain_id][pos]["modified_chain_id"] = f"{chain_id}A"
-            residue_mapping[chain_id][pos]["modified_residue_num"] = pos
+            residue_mapping[chain_id_orig][pos]["modified_chain_id"] = f"{chain_id_orig}A"
+            residue_mapping[chain_id_orig][pos]["modified_residue_num"] = pos
         
         # The terminal residue becomes ligand
-        residue_mapping[chain_id][split_position]["modified_chain_id"] = f"{chain_id}L"
-        residue_mapping[chain_id][split_position]["modified_residue_num"] = 1
+        residue_mapping[chain_id_orig][split_position]["modified_chain_id"] = f"{chain_id_orig}L"
+        residue_mapping[chain_id_orig][split_position]["modified_residue_num"] = 1
     else:
         # N-terminal split: first residue becomes ligand, rest shifts down
-        residue_mapping[chain_id][1]["modified_chain_id"] = f"{chain_id}L"
-        residue_mapping[chain_id][1]["modified_residue_num"] = 1
+        residue_mapping[chain_id_orig][1]["modified_chain_id"] = f"{chain_id_orig}L"
+        residue_mapping[chain_id_orig][1]["modified_residue_num"] = 1
         
         for pos in range(2, sequence_length + 1):
-            residue_mapping[chain_id][pos]["modified_chain_id"] = f"{chain_id}A"
-            residue_mapping[chain_id][pos]["modified_residue_num"] = pos - 1
+            residue_mapping[chain_id_orig][pos]["modified_chain_id"] = f"{chain_id_orig}A"
+            residue_mapping[chain_id_orig][pos]["modified_residue_num"] = pos - 1
 
 def update_residue_mapping_for_internal_split(residue_mapping: Dict, chain_id: str, 
                                             split_position: int, sequence_length: int) -> None:
@@ -207,8 +207,13 @@ def model_bond_with_ligand(json_data: Dict, bond: Tuple, residue_mapping: Dict) 
     
     # Extract bond information
     atom1, atom2 = bond
-    chain1_id, seq_num1, atom_name1 = atom1
-    chain2_id, seq_num2, atom_name2 = atom2
+    chain1_id_orig, seq_num1_old, atom_name1 = atom1
+    chain2_id_orig, seq_num2_old, atom_name2 = atom2
+    # Mapping for residue numbers
+    chain1_id = residue_mapping[chain1_id_orig][seq_num1_old]["modified_chain_id"]
+    seq_num1 = residue_mapping[chain1_id_orig][seq_num1_old]["modified_residue_num"]
+    chain2_id = residue_mapping[chain2_id_orig][seq_num2_old]["modified_chain_id"]
+    seq_num2 = residue_mapping[chain2_id_orig][seq_num2_old]["modified_residue_num"]
     
     # Get sequence information
     chain1_info = get_sequence_info(json_data, chain1_id)
@@ -248,7 +253,7 @@ def model_bond_with_ligand(json_data: Dict, bond: Tuple, residue_mapping: Dict) 
         # Update residue mapping
         if chain1_is_terminal:
             is_c_terminal = seq_num1 == len(chain1_sequence)
-            update_residue_mapping_for_terminal_split(residue_mapping, chain1_id, 
+            update_residue_mapping_for_terminal_split(residue_mapping, chain1_id_orig, 
                                                     seq_num1, len(chain1_sequence), is_c_terminal)
             
             # Create modified sequence
@@ -260,7 +265,7 @@ def model_bond_with_ligand(json_data: Dict, bond: Tuple, residue_mapping: Dict) 
                 new_chain_id = f"{chain1_id}A"
         else:
             # Internal residue
-            update_residue_mapping_for_internal_split(residue_mapping, chain1_id, 
+            update_residue_mapping_for_internal_split(residue_mapping, chain1_id_orig, 
                                                     seq_num1, len(chain1_sequence))
             
             # Split into two parts
@@ -325,7 +330,7 @@ def model_bond_with_ligand(json_data: Dict, bond: Tuple, residue_mapping: Dict) 
                 new_sequences.append(sequence)
         
         # Bond from ligand to chain2 (using original mapping for chain2)
-        chain2_mapped = residue_mapping[chain2_id][seq_num2]
+        chain2_mapped = residue_mapping[chain2_id_orig][seq_num2]
         new_bonded_pairs.append([[ligand_id, 1, atom_name1], 
                                [chain2_mapped["modified_chain_id"], 
                                 chain2_mapped["modified_residue_num"], atom_name2]])
@@ -390,13 +395,13 @@ def main():
     parser.add_argument(
         "--source-dir", 
         "-s", 
-        default="output/jsons/ubn_links/",
+        default="test_files/input/",
         help="Directory containing input JSON files (default: output/jsons/ubn_links/)"
     )
     parser.add_argument(
         "--output-dir", 
         "-o", 
-        default="output/jsons/ubn_links_modified/",
+        default="test_files/output/",
         help="Directory to save modified JSON files (default: output/jsons/ubn_links_modified/)"
     )
     parser.add_argument(
@@ -421,13 +426,9 @@ def main():
         return 1
     
     # Process all JSON files
-    try:
-        process_json_files(args.source_dir, args.output_dir)
-        print("Process completed successfully!")
-        return 0
-    except Exception as e:
-        print(f"Error during processing: {e}")
-        return 1
+    process_json_files(args.source_dir, args.output_dir)
+    print("Process completed successfully!")
+    return 0
 
 if __name__ == "__main__":
     exit_code = main()
