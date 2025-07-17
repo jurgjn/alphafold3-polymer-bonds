@@ -1,0 +1,56 @@
+{
+  "name": "5ulf_b_to_a_ubq_linkage",
+  "sequences": [
+    {
+      "protein": {
+        "id": "A",
+        "sequence": "MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRG"
+      }
+    },
+    {
+      "ligand": {
+        "id": "B",
+        "ccdCodes": [
+          "GLY"
+        ]
+      }
+    },
+    {
+      "protein": {
+        "id": "C",
+        "sequence": "GPLGSMALKRIHKELNDLARDPPAQSRAGPVGDDMFHWQATIMGPNDSPYQGGVFFLTIHFPTDYPFKPPKVAFTTRIYHPNINSNGSIKLDILRSQWSPALTISKVLLSISSLLSDPNPDDPLVPEIARIYKTDREKYNRIAREWTQKYAM"
+      }
+    }
+  ],
+  "modelSeeds": [
+    1
+  ],
+  "dialect": "alphafold3",
+  "bondedAtomPairs": [
+    [
+      [
+        "A",
+        75,
+        "C"
+      ],
+      [
+        "B",
+        1,
+        "N"
+      ]
+    ],
+    [
+      [
+        "B",
+        1,
+        "C"
+      ],
+      [
+        "C",
+        85,
+        "NZ"
+      ]
+    ]
+  ],
+  "version": 1
+}

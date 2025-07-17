@@ -1,0 +1,36 @@
+{
+  "name": "1aar_a_to_b_ubq_linkage",
+  "sequences": [
+    {
+      "protein": {
+        "id": "A",
+        "sequence": "MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGG"
+      }
+    },
+    {
+      "protein": {
+        "id": "C",
+        "sequence": "MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGG"
+      }
+    }
+  ],
+  "modelSeeds": [
+    1
+  ],
+  "dialect": "alphafold3",
+  "bondedAtomPairs": [
+    [
+      [
+        "A",
+        76,
+        "C"
+      ],
+      [
+        "C",
+        48,
+        "NZ"
+      ]
+    ]
+  ],
+  "version": 1
+}

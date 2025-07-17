@@ -1,0 +1,48 @@
+{
+  "name": "1aar_a_to_b_ubq_linkage",
+  "sequences": [
+    {
+      "protein": {
+        "id": "A",
+        "sequence": "TITLE"
+      }
+    },
+    {
+      "protein": {
+        "id": "B",
+        "sequence": "DEAL"
+      }
+    }
+  ],
+  "modelSeeds": [
+    1
+  ],
+  "dialect": "alphafold3",
+  "bondedAtomPairs": [
+    [
+      [
+        "A",
+        5,
+        "C"
+      ],
+      [
+        "B",
+        4,
+        "NZ"
+      ]
+    ],
+    [
+      [
+        "A",
+        1,
+        "CB"
+      ],
+      [
+        "B",
+        1,
+        "CG"
+      ]
+    ]
+  ],
+  "version": 1
+}

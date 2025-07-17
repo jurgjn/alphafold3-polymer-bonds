@@ -1,0 +1,56 @@
+{
+  "name": "1aar_a_to_b_ubq_linkage",
+  "sequences": [
+    {
+      "ligand": {
+        "id": "AL",
+        "ccdCodes": [
+          "GLY"
+        ]
+      }
+    },
+    {
+      "protein": {
+        "id": "AA",
+        "sequence": "MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRG"
+      }
+    },
+    {
+      "protein": {
+        "id": "C",
+        "sequence": "MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGG"
+      }
+    }
+  ],
+  "modelSeeds": [
+    1
+  ],
+  "dialect": "alphafold3",
+  "bondedAtomPairs": [
+    [
+      [
+        "AA",
+        75,
+        "C"
+      ],
+      [
+        "AL",
+        1,
+        "N"
+      ]
+    ],
+    [
+      [
+        "AL",
+        1,
+        "C"
+      ],
+      [
+        "C",
+        48,
+        "NZ"
+      ]
+    ]
+  ],
+  "version": 1
+}

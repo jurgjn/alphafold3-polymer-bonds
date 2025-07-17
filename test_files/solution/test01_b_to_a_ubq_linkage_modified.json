@@ -1,0 +1,56 @@
+{
+  "name": "test01_b_to_a_ubq_linkage",
+  "sequences": [
+    {
+      "protein": {
+        "id": "A",
+        "sequence": "MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGGTTTTTLLLLTITLETITLETITLE"
+      }
+    },
+    {
+      "ligand": {
+        "id": "BL",
+        "ccdCodes": [
+          "GLY"
+        ]
+      }
+    },
+    {
+      "protein": {
+        "id": "BC",
+        "sequence": "MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGG"
+      }
+    }
+  ],
+  "modelSeeds": [
+    1
+  ],
+  "dialect": "alphafold3",
+  "bondedAtomPairs": [
+    [
+      [
+        "BC",
+        75,
+        "C"
+      ],
+      [
+        "BL",
+        1,
+        "N"
+      ]
+    ],
+    [
+      [
+        "BL",
+        1,
+        "C"
+      ],
+      [
+        "A",
+        48,
+        "NZ"
+      ]
+    ]
+  ],
+  "version": 1
+}

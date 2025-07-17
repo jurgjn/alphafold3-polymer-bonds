@@ -1,0 +1,60 @@
+{
+  "name": "1trz_bioass_1",
+  "sequences": [
+    {
+      "protein": {
+        "id": "A",
+        "sequence": "GIVEQCCTSICSLYQLENYCN"
+      }
+    },
+    {
+      "protein": {
+        "id": "B",
+        "sequence": "FVNQHLCGSHLVEALYLVCGERGFFYTPKT"
+      }
+    }
+  ],
+  "modelSeeds": [
+    1
+  ],
+  "dialect": "alphafold3",
+  "bondedAtomPairs": [
+    [
+      [
+        "B",
+        19,
+        "SG"
+      ],
+      [
+        "A",
+        20,
+        "SG"
+      ]
+    ],
+    [
+      [
+        "A",
+        6,
+        "SG"
+      ],
+      [
+        "A",
+        11,
+        "SG"
+      ]
+    ],
+    [
+      [
+        "A",
+        7,
+        "SG"
+      ],
+      [
+        "B",
+        7,
+        "SG"
+      ]
+    ]
+  ],
+  "version": 1
+}
