@@ -147,7 +147,7 @@ def update_residue_mapping_for_terminal_split(residue_mapping: Dict, ligand_chai
     if is_c_terminal:
         # C-terminal split: chain keeps positions 1 to split_position-1
         # Ligand gets the last residue
-        basepos = ligand_seq_num_old - sequence_length + 1
+        basepos = ligand_seq_num_old - sequence_length
         for pos in range(1, ligand_seq_num):
             residue_mapping[ligand_chain_id_orig][basepos + pos]["modified_chain_id"] = f"{ligand_chain_id}A"
             residue_mapping[ligand_chain_id_orig][basepos + pos]["modified_residue_num"] = pos
@@ -157,37 +157,33 @@ def update_residue_mapping_for_terminal_split(residue_mapping: Dict, ligand_chai
         residue_mapping[ligand_chain_id_orig][ligand_seq_num]["modified_residue_num"] = 1
     else:
         # N-terminal split: first residue becomes ligand, rest shifts down
-        residue_mapping[ligand_chain_id_orig][ligand_seq_num_old]["modified_chain_id"] = f"{chain_id_orig}L"
+        residue_mapping[ligand_chain_id_orig][ligand_seq_num_old]["modified_chain_id"] = f"{ligand_chain_id}L"
         residue_mapping[ligand_chain_id_orig][ligand_seq_num_old]["modified_residue_num"] = 1
         basepos = ligand_seq_num_old
-        for pos in range(1, sequence_length + 1):
-            residue_mapping[ligand_chain_id_orig][basepos + pos]["modified_chain_id"] = f"{chain_id_orig}A"
+        for pos in range(1, sequence_length):
+            residue_mapping[ligand_chain_id_orig][basepos + pos]["modified_chain_id"] = f"{ligand_chain_id}A"
             residue_mapping[ligand_chain_id_orig][basepos + pos]["modified_residue_num"] = pos
 
-def update_residue_mapping_for_internal_split(residue_mapping: Dict, chain_id: str, 
-                                            split_position: int, sequence_length: int) -> None:
+def update_residue_mapping_for_internal_split(residue_mapping, ligand_chain_id, ligand_chain_id_orig,
+                                                ligand_seq_num, ligand_seq_num_old, ligand_length) -> None:
     """
     Update residue mapping when splitting a chain at internal position.
     
-    Args:
-        residue_mapping: The residue mapping dictionary to update
-        chain_id: Original chain ID
-        split_position: Position where the split occurs
-        sequence_length: Length of the original sequence
     """
+    basepos = ligand_seq_num_old - ligand_seq_num
     # Part A: residues 1 to split_position-1
-    for pos in range(1, split_position):
-        residue_mapping[chain_id][pos]["modified_chain_id"] = f"{chain_id}A"
-        residue_mapping[chain_id][pos]["modified_residue_num"] = pos
+    for pos in range(1, ligand_seq_num):
+        residue_mapping[ligand_chain_id_orig][basepos + pos]["modified_chain_id"] = f"{ligand_chain_id}A"
+        residue_mapping[ligand_chain_id_orig][basepos + pos]["modified_residue_num"] = pos
     
     # Ligand: the residue at split_position
-    residue_mapping[chain_id][split_position]["modified_chain_id"] = f"{chain_id}L"
-    residue_mapping[chain_id][split_position]["modified_residue_num"] = 1
+    residue_mapping[ligand_chain_id_orig][basepos + ligand_seq_num]["modified_chain_id"] = f"{ligand_chain_id}L"
+    residue_mapping[ligand_chain_id_orig][basepos + ligand_seq_num]["modified_residue_num"] = 1
     
     # Part B: residues split_position+1 to end
-    for pos in range(split_position + 1, sequence_length + 1):
-        residue_mapping[chain_id][pos]["modified_chain_id"] = f"{chain_id}B"
-        residue_mapping[chain_id][pos]["modified_residue_num"] = pos - split_position
+    for pos in range(ligand_seq_num + 1, ligand_length + 1):
+        residue_mapping[ligand_chain_id_orig][basepos + pos]["modified_chain_id"] = f"{ligand_chain_id}B"
+        residue_mapping[ligand_chain_id_orig][basepos + pos]["modified_residue_num"] = pos - ligand_seq_num
 
 def model_bond_with_ligand(json_data: Dict, bond: Tuple, residue_mapping: Dict) -> Dict:
     """
@@ -391,6 +387,8 @@ def process_chain_bond(modified_json: Dict, bond: Tuple, is_intra_chain: bool,re
         ligand_seq_num = seq_num1
         ligand_atom_name = atom_name1
         target_chain_id = chain2_id
+        target_chain_id_orig = chain2_id_orig
+        target_seq_num_old = seq_num2_old
         target_seq_num = seq_num2
         target_atom_name = atom_name2
         ligand_sequence = chain1_sequence
@@ -404,7 +402,9 @@ def process_chain_bond(modified_json: Dict, bond: Tuple, is_intra_chain: bool,re
         ligand_residue = chain2_sequence[seq_num2 - 1]
         ligand_atom_name = atom_name2
         target_chain_id = chain1_id
+        target_chain_id_orig = chain1_id_orig
         target_seq_num = seq_num1
+        target_seq_num_old = seq_num1_old
         target_atom_name = atom_name1
         ligand_sequence = chain2_sequence
         is_ligand_terminal = chain2_is_terminal
@@ -436,8 +436,8 @@ def process_chain_bond(modified_json: Dict, bond: Tuple, is_intra_chain: bool,re
                 add_peptide_bond(new_bonded_pairs, ligand_id, 1, new_chain_id, 1)
     else:
         # Internal residue - split into two parts
-        update_residue_mapping_for_internal_split(residue_mapping, ligand_chain_id, 
-                                                ligand_seq_num, len(ligand_sequence))
+        update_residue_mapping_for_internal_split(residue_mapping, ligand_chain_id, ligand_chain_id_orig,
+                                                ligand_seq_num, ligand_seq_num_old, len(ligand_sequence))
         
         part_a_sequence = ligand_sequence[:ligand_seq_num-1]
         part_b_sequence = ligand_sequence[ligand_seq_num:]
@@ -460,7 +460,7 @@ def process_chain_bond(modified_json: Dict, bond: Tuple, is_intra_chain: bool,re
             new_sequences.append(sequence)
     
     # Bond from ligand to target chain
-    target_mapped = residue_mapping[target_chain_id][target_seq_num]
+    target_mapped = residue_mapping[target_chain_id_orig][target_seq_num_old]
     new_bonded_pairs.append([[ligand_id, 1, ligand_atom_name], 
                            [target_mapped["modified_chain_id"], 
                             target_mapped["modified_residue_num"], target_atom_name]])
