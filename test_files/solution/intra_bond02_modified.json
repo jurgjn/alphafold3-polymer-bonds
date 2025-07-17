@@ -1,0 +1,50 @@
+{
+  "name": "intra_bond02",
+  "sequences": [
+    {
+      "ligand": {
+        "id": "AL",
+        "ccdCodes": [
+          "CYS"
+        ]
+      }
+    },
+    {
+      "protein": {
+        "id": "AA",
+        "sequence": "ACI"
+      }
+    }
+  ],
+  "modelSeeds": [
+    1
+  ],
+  "dialect": "alphafold3",
+  "bondedAtomPairs": [
+    [
+      [
+        "AA",
+        3,
+        "C"
+      ],
+      [
+        "AL",
+        1,
+        "N"
+      ]
+    ],
+    [
+      [
+        "AL",
+        1,
+        "SG"
+      ],
+      [
+        "AA",
+        2,
+        "SG"
+      ]
+    ]
+  ],
+  "version": 1
+}

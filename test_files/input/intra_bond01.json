@@ -1,0 +1,30 @@
+{
+  "name": "intra_bond01",
+  "sequences": [
+    {
+      "protein": {
+        "id": "A",
+        "sequence": "CIC"
+      }
+    }
+  ],
+  "modelSeeds": [
+    1
+  ],
+  "dialect": "alphafold3",
+  "bondedAtomPairs": [
+    [
+      [
+        "A",
+        1,
+        "SG"
+      ],
+      [
+        "A",
+        3,
+        "SG"
+      ]
+    ]
+  ],
+  "version": 1
+}
