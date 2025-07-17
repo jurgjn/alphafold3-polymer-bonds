@@ -138,37 +138,31 @@ def is_terminal_residue(sequence: str, residue_position: int) -> bool:
     """
     return residue_position == 1 or residue_position == len(sequence)
 
-def update_residue_mapping_for_terminal_split(residue_mapping: Dict, chain_id_orig: str, 
-                                            split_position: int, sequence_length: int,
+def update_residue_mapping_for_terminal_split(residue_mapping: Dict, ligand_chain_id, ligand_chain_id_orig,
+                                                 ligand_seq_num, ligand_seq_num_old,sequence_length: int,
                                             is_c_terminal: bool) -> None:
     """
     Update residue mapping when splitting a chain at terminal position.
-    
-    Args:
-        residue_mapping: The residue mapping dictionary to update
-        chain_id_orig: Original chain ID
-        split_position: Position where the split occurs
-        sequence_length: Length of the original sequence
-        is_c_terminal: True if splitting at C-terminal, False for N-terminal
     """
     if is_c_terminal:
         # C-terminal split: chain keeps positions 1 to split_position-1
         # Ligand gets the last residue
-        for pos in range(1, split_position):
-            residue_mapping[chain_id_orig][pos]["modified_chain_id"] = f"{chain_id_orig}A"
-            residue_mapping[chain_id_orig][pos]["modified_residue_num"] = pos
+        basepos = ligand_seq_num_old - sequence_length + 1
+        for pos in range(1, ligand_seq_num):
+            residue_mapping[ligand_chain_id_orig][basepos + pos]["modified_chain_id"] = f"{ligand_chain_id}A"
+            residue_mapping[ligand_chain_id_orig][basepos + pos]["modified_residue_num"] = pos
         
         # The terminal residue becomes ligand
-        residue_mapping[chain_id_orig][split_position]["modified_chain_id"] = f"{chain_id_orig}L"
-        residue_mapping[chain_id_orig][split_position]["modified_residue_num"] = 1
+        residue_mapping[ligand_chain_id_orig][ligand_seq_num]["modified_chain_id"] = f"{ligand_chain_id}L"
+        residue_mapping[ligand_chain_id_orig][ligand_seq_num]["modified_residue_num"] = 1
     else:
         # N-terminal split: first residue becomes ligand, rest shifts down
-        residue_mapping[chain_id_orig][1]["modified_chain_id"] = f"{chain_id_orig}L"
-        residue_mapping[chain_id_orig][1]["modified_residue_num"] = 1
-        
-        for pos in range(2, sequence_length + 1):
-            residue_mapping[chain_id_orig][pos]["modified_chain_id"] = f"{chain_id_orig}A"
-            residue_mapping[chain_id_orig][pos]["modified_residue_num"] = pos - 1
+        residue_mapping[ligand_chain_id_orig][ligand_seq_num_old]["modified_chain_id"] = f"{chain_id_orig}L"
+        residue_mapping[ligand_chain_id_orig][ligand_seq_num_old]["modified_residue_num"] = 1
+        basepos = ligand_seq_num_old
+        for pos in range(1, sequence_length + 1):
+            residue_mapping[ligand_chain_id_orig][basepos + pos]["modified_chain_id"] = f"{chain_id_orig}A"
+            residue_mapping[ligand_chain_id_orig][basepos + pos]["modified_residue_num"] = pos
 
 def update_residue_mapping_for_internal_split(residue_mapping: Dict, chain_id: str, 
                                             split_position: int, sequence_length: int) -> None:
@@ -390,23 +384,27 @@ def process_chain_bond(modified_json: Dict, bond: Tuple, is_intra_chain: bool,re
     
     if use_chain1_as_ligand:
         # Convert chain1 residue to ligand
-        ligand_chain_id = chain1_id_orig
-        ligand_seq_num = seq_num1_old
-        ligand_residue = chain1_sequence[seq_num1_old - 1]
+        ligand_chain_id = chain1_id
+        ligand_residue = chain1_sequence[seq_num1 - 1]
+        ligand_chain_id_orig = chain1_id_orig
+        ligand_seq_num_old = seq_num1_old
+        ligand_seq_num = seq_num1
         ligand_atom_name = atom_name1
-        target_chain_id = chain2_id_orig
-        target_seq_num = seq_num2_old
+        target_chain_id = chain2_id
+        target_seq_num = seq_num2
         target_atom_name = atom_name2
         ligand_sequence = chain1_sequence
         is_ligand_terminal = chain1_is_terminal
     else:
         # Convert chain2 residue to ligand
-        ligand_chain_id = chain2_id_orig
-        ligand_seq_num = seq_num2_old
-        ligand_residue = chain2_sequence[seq_num2_old - 1]
+        ligand_chain_id = chain2_id
+        ligand_seq_num = seq_num2
+        ligand_chain_id_orig = chain2_id_orig
+        ligand_seq_num_old = seq_num2_old
+        ligand_residue = chain2_sequence[seq_num2 - 1]
         ligand_atom_name = atom_name2
-        target_chain_id = chain1_id_orig
-        target_seq_num = seq_num1_old
+        target_chain_id = chain1_id
+        target_seq_num = seq_num1
         target_atom_name = atom_name1
         ligand_sequence = chain2_sequence
         is_ligand_terminal = chain2_is_terminal
@@ -418,8 +416,8 @@ def process_chain_bond(modified_json: Dict, bond: Tuple, is_intra_chain: bool,re
     # Handle ligand chain splitting
     if is_ligand_terminal:
         is_c_terminal = ligand_seq_num == len(ligand_sequence)
-        update_residue_mapping_for_terminal_split(residue_mapping, ligand_chain_id, 
-                                                ligand_seq_num, len(ligand_sequence), is_c_terminal)
+        update_residue_mapping_for_terminal_split(residue_mapping, ligand_chain_id, ligand_chain_id_orig,
+                                                ligand_seq_num, ligand_seq_num_old, len(ligand_sequence), is_c_terminal)
         
         if is_c_terminal:
             modified_sequence = ligand_sequence[:-1]
