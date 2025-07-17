@@ -2,17 +2,17 @@
   "name": "5ulf_b_to_a_ubq_linkage",
   "sequences": [
     {
-      "protein": {
-        "id": "A",
-        "sequence": "MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRG"
-      }
-    },
-    {
       "ligand": {
-        "id": "B",
+        "id": "AL",
         "ccdCodes": [
           "GLY"
         ]
+      }
+    },
+    {
+      "protein": {
+        "id": "AA",
+        "sequence": "MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRG"
       }
     },
     {
@@ -29,19 +29,19 @@
   "bondedAtomPairs": [
     [
       [
-        "A",
+        "AA",
         75,
         "C"
       ],
       [
-        "B",
+        "AL",
         1,
         "N"
       ]
     ],
     [
       [
-        "B",
+        "AL",
         1,
         "C"
       ],

@@ -1,18 +1,26 @@
 {
-  "name": "1aar_a_to_b_ubq_linkage",
+  "name": "selfmade01",
   "sequences": [
+    {
+      "ligand": {
+        "id": "AAL",
+        "ccdCodes": [
+          "THR"
+        ]
+      }
+    },
+    {
+      "protein": {
+        "id": "AAA",
+        "sequence": "ITL"
+      }
+    },
     {
       "ligand": {
         "id": "AL",
         "ccdCodes": [
           "GLU"
         ]
-      }
-    },
-    {
-      "protein": {
-        "id": "AA",
-        "sequence": "TITL"
       }
     },
     {
@@ -27,6 +35,30 @@
   ],
   "dialect": "alphafold3",
   "bondedAtomPairs": [
+    [
+      [
+        "AAL",
+        1,
+        "C"
+      ],
+      [
+        "AAA",
+        1,
+        "N"
+      ]
+    ],
+    [
+      [
+        "AAL",
+        1,
+        "CB"
+      ],
+      [
+        "B",
+        1,
+        "CG"
+      ]
+    ],
     [
       [
         "AA",
@@ -49,18 +81,6 @@
         "B",
         4,
         "NZ"
-      ]
-    ],
-    [
-      [
-        "A",
-        1,
-        "CB"
-      ],
-      [
-        "B",
-        1,
-        "CG"
       ]
     ]
   ],

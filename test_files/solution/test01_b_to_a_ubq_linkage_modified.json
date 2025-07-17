@@ -2,12 +2,6 @@
   "name": "test01_b_to_a_ubq_linkage",
   "sequences": [
     {
-      "protein": {
-        "id": "A",
-        "sequence": "MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGGTTTTTLLLLTITLETITLETITLE"
-      }
-    },
-    {
       "ligand": {
         "id": "BL",
         "ccdCodes": [
@@ -17,8 +11,14 @@
     },
     {
       "protein": {
-        "id": "BC",
-        "sequence": "MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGG"
+        "id": "BA",
+        "sequence": "MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRG"
+      }
+    },
+    {
+      "protein": {
+        "id": "A",
+        "sequence": "MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGGTTTTTLLLLTITLETITLETITLE"
       }
     }
   ],
@@ -29,7 +29,7 @@
   "bondedAtomPairs": [
     [
       [
-        "BC",
+        "BA",
         75,
         "C"
       ],
