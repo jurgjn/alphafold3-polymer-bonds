@@ -1,5 +1,21 @@
+#!/usr/bin/env python3
+"""
+Protein Bond Modeling Script
+
+This script processes AlphaFold3 JSON files to model protein-protein bonds 
+using ligand bridges. It identifies bonds between protein chains and modifies 
+the structure to represent these bonds through intermediate ligand molecules.
+
+Usage:
+    python model_protein_bonds_hack.py --source-dir input/ --output-dir output/
+    python model_protein_bonds_hack.py -s input/ -o output/ --verbose
+
+Author: Generated from Jupyter notebook
+"""
+
 import json
 import os
+import argparse
 from pathlib import Path
 from typing import Dict, List, Tuple, Any
 from copy import deepcopy
@@ -25,7 +41,7 @@ def load_json_files(source_dir: str) -> Dict[str, Dict]:
         try:
             with open(json_file, 'r') as f:
                 json_files[json_file.stem] = json.load(f)
-            #print(f"Loaded: {json_file.name}")
+            print(f"Loaded: {json_file.name}")
         except Exception as e:
             print(f"Error loading {json_file.name}: {e}")
     
@@ -84,7 +100,7 @@ def find_protein_protein_bonds(json_data: Dict) -> List[Tuple]:
             
             if chain1 in protein_chains and chain2 in protein_chains and chain1 != chain2:
                 protein_protein_bonds.append(tuple(bond))
-                #print(f"Found protein-protein bond: {chain1} -> {chain2}")
+                print(f"Found protein-protein bond: {chain1} -> {chain2}")
     
     return protein_protein_bonds
 
@@ -339,7 +355,7 @@ def process_json_files(source_dir: str, output_dir: str = "output/jsons/ubn_link
     json_files = load_json_files(source_dir)
     
     for filename, json_data in json_files.items():
-        #print(f"\nProcessing {filename}...")
+        print(f"\nProcessing {filename}...")
         
         # Initialize residue mapping
         residue_mapping = initialize_residue_mapping(json_data)
@@ -353,8 +369,8 @@ def process_json_files(source_dir: str, output_dir: str = "output/jsons/ubn_link
         
         # Process each protein-protein bond
         modified_json = json_data
-        for bond in protein_bonds:
-            #print(f"Modifying bond: {bond}")
+        for i, bond in enumerate(protein_bonds, 1):
+            print(f"Modifying bond {i}/{len(protein_bonds)}: {bond}")
             modified_json = model_bond_with_ligand(modified_json, bond, residue_mapping)
         
         # Save modified JSON
@@ -362,10 +378,57 @@ def process_json_files(source_dir: str, output_dir: str = "output/jsons/ubn_link
         with open(output_path, 'w') as f:
             json.dump(modified_json, f, indent=2)
         
-        #print(f"Saved modified file: {output_path}")
+        print(f"Saved modified file: {output_path}")
 
-# Set source directory
-source_dir = "output/jsons/ubn_links/"
+def main():
+    """
+    Main function to execute the protein bond modeling script.
+    """
+    parser = argparse.ArgumentParser(
+        description="Model protein-protein bonds using ligand bridges in AlphaFold3 JSON files"
+    )
+    parser.add_argument(
+        "--source-dir", 
+        "-s", 
+        default="output/jsons/ubn_links/",
+        help="Directory containing input JSON files (default: output/jsons/ubn_links/)"
+    )
+    parser.add_argument(
+        "--output-dir", 
+        "-o", 
+        default="output/jsons/ubn_links_modified/",
+        help="Directory to save modified JSON files (default: output/jsons/ubn_links_modified/)"
+    )
+    parser.add_argument(
+        "--verbose", 
+        "-v", 
+        action="store_true",
+        help="Enable verbose output"
+    )
+    
+    args = parser.parse_args()
+    
+    print("Starting protein bond modeling process...")
+    print(f"Source directory: {args.source_dir}")
+    print(f"Output directory: {args.output_dir}")
+    
+    if args.verbose:
+        print("Verbose mode enabled")
+    
+    # Check if source directory exists
+    if not Path(args.source_dir).exists():
+        print(f"Error: Source directory '{args.source_dir}' does not exist!")
+        return 1
+    
+    # Process all JSON files
+    try:
+        process_json_files(args.source_dir, args.output_dir)
+        print("Process completed successfully!")
+        return 0
+    except Exception as e:
+        print(f"Error during processing: {e}")
+        return 1
 
-# Process all JSON files
-process_json_files(source_dir)
+if __name__ == "__main__":
+    exit_code = main()
+    exit(exit_code)
