@@ -129,37 +129,3 @@ python tests.py
 ```
 
 Tests compare generated output files with reference solutions in `test_files/solution/`.
-
-## Troubleshooting
-
-### Common Issues
-
-**No protein-protein bonds found**
-- Verify input JSON contains `bondedAtomPairs` between protein chains
-- Check that protein sequences are properly defined in `sequences` array
-
-**Missing input files**
-- Ensure the source directory exists and contains `.json` files
-- Check file permissions for read access
-
-**Output errors**
-- Verify write permissions for output directory
-- Ensure sufficient disk space
-
-## Technical Details
-
-### Supported Bond Types
-- **Inter-chain bonds**: Between different protein chains
-- **Intra-chain bonds**: Within the same protein chain (creates loops)
-
-### Chemical Accuracy
-- Uses standard CCD (Chemical Component Dictionary) codes for amino acids
-- Maintains proper peptide bond geometry (C-N connections)
-- Preserves original atomic bond information where possible
-
-## Contributing
-
-When contributing to this project:
-1. Run tests to ensure functionality is preserved
-2. Update documentation for any new features
-3. Follow existing code style and naming conventions
