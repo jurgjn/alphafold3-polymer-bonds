@@ -12,7 +12,7 @@ This tool addresses the challenge of representing protein-protein bonds in struc
 ## Quick Start
 
 ### Prerequisites
-- Python 3.7+
+- Python 3.8+
 - Input JSON files with AlphaFold3 structure data
 
 ### Installation
