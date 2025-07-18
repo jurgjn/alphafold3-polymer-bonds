@@ -1,0 +1,156 @@
+{
+  "name": "1trz_bioass_1",
+  "sequences": [
+    {
+      "ligand": {
+        "id": "ABL",
+        "ccdCodes": [
+          "CYS"
+        ]
+      }
+    },
+    {
+      "protein": {
+        "id": "ABA",
+        "sequence": "TSICSLYQLENYCN"
+      }
+    },
+    {
+      "ligand": {
+        "id": "AL",
+        "ccdCodes": [
+          "CYS"
+        ]
+      }
+    },
+    {
+      "protein": {
+        "id": "AA",
+        "sequence": "GIVEQ"
+      }
+    },
+    {
+      "ligand": {
+        "id": "BL",
+        "ccdCodes": [
+          "CYS"
+        ]
+      }
+    },
+    {
+      "protein": {
+        "id": "BA",
+        "sequence": "FVNQHLCGSHLVEALYLV"
+      }
+    },
+    {
+      "protein": {
+        "id": "BB",
+        "sequence": "GERGFFYTPKT"
+      }
+    }
+  ],
+  "modelSeeds": [
+    1
+  ],
+  "dialect": "alphafold3",
+  "bondedAtomPairs": [
+    [
+      [
+        "ABL",
+        1,
+        "C"
+      ],
+      [
+        "ABA",
+        1,
+        "N"
+      ]
+    ],
+    [
+      [
+        "ABL",
+        1,
+        "SG"
+      ],
+      [
+        "BA",
+        7,
+        "SG"
+      ]
+    ],
+    [
+      [
+        "AA",
+        5,
+        "C"
+      ],
+      [
+        "AL",
+        1,
+        "N"
+      ]
+    ],
+    [
+      [
+        "AL",
+        1,
+        "C"
+      ],
+      [
+        "ABL",
+        1,
+        "N"
+      ]
+    ],
+    [
+      [
+        "AL",
+        1,
+        "SG"
+      ],
+      [
+        "ABA",
+        4,
+        "SG"
+      ]
+    ],
+    [
+      [
+        "BA",
+        18,
+        "C"
+      ],
+      [
+        "BL",
+        1,
+        "N"
+      ]
+    ],
+    [
+      [
+        "BL",
+        1,
+        "C"
+      ],
+      [
+        "BB",
+        1,
+        "N"
+      ]
+    ],
+    [
+      [
+        "BL",
+        1,
+        "SG"
+      ],
+      [
+        "ABA",
+        20,
+        "SG"
+      ]
+    ]
+  ],
+  "version": 1
+}
