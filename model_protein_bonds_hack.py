@@ -140,7 +140,7 @@ def is_terminal_residue(sequence: str, residue_position: int) -> bool:
 
 def update_residue_mapping_for_terminal_split(residue_mapping: Dict, split_chain_id, split_chain_id_orig,
                                                  ligand_seq_num, ligand_seq_num_old,sequence_length: int,
-                                            is_c_terminal: bool) -> None:
+                                            is_c_terminal: bool, new_chain_id) -> None:
     """
     Update residue mapping when splitting a chain at terminal position.
     """
@@ -149,7 +149,7 @@ def update_residue_mapping_for_terminal_split(residue_mapping: Dict, split_chain
         # Ligand gets the last residue
         basepos = ligand_seq_num_old - sequence_length
         for pos in range(1, ligand_seq_num):
-            residue_mapping[split_chain_id_orig][basepos + pos]["modified_chain_id"] = f"{split_chain_id}A"
+            residue_mapping[split_chain_id_orig][basepos + pos]["modified_chain_id"] = new_chain_id
             residue_mapping[split_chain_id_orig][basepos + pos]["modified_residue_num"] = pos
         
         # The terminal residue becomes ligand
@@ -161,7 +161,7 @@ def update_residue_mapping_for_terminal_split(residue_mapping: Dict, split_chain
         residue_mapping[split_chain_id_orig][ligand_seq_num_old]["modified_residue_num"] = 1
         basepos = ligand_seq_num_old
         for pos in range(1, sequence_length):
-            residue_mapping[split_chain_id_orig][basepos + pos]["modified_chain_id"] = f"{split_chain_id}A"
+            residue_mapping[split_chain_id_orig][basepos + pos]["modified_chain_id"] = new_chain_id
             residue_mapping[split_chain_id_orig][basepos + pos]["modified_residue_num"] = pos
 
 def update_residue_mapping_for_internal_split(residue_mapping, split_chain_id, split_chain_id_orig,
@@ -256,7 +256,7 @@ def correct_chain_and_resnum(bondedAtomPairs, split_chain_id, ligand_seq_num, li
                 c, s = ligand_id, 1
             elif s < ligand_seq_num:
                 # is bond to first part of chain
-                c, s = part_a_id, s - 1 
+                c, s = part_a_id, s 
             else:
                 # is bond to second part of chain
                 c, s = part_b_id, s - ligand_seq_num
@@ -340,13 +340,12 @@ def process_chain_bond(modified_json: Dict, bond: Tuple, is_intra_chain: bool,re
     # Handle ligand chain splitting
     if is_ligand_terminal:
         is_c_terminal = ligand_seq_num == len(split_chain_sequence)
-        update_residue_mapping_for_terminal_split(residue_mapping, split_chain_id, split_chain_id_orig,
-                                                ligand_seq_num, ligand_seq_num_old, len(split_chain_sequence), is_c_terminal)
         
-        new_chain_id = f"{split_chain_id}A"
         if is_c_terminal:
+            new_chain_id = f"{split_chain_id}A"
             modified_sequence = split_chain_sequence[:-1]
         else:
+            new_chain_id = f"{split_chain_id}B"
             modified_sequence = split_chain_sequence[1:]
         
         if modified_sequence:
@@ -358,6 +357,8 @@ def process_chain_bond(modified_json: Dict, bond: Tuple, is_intra_chain: bool,re
             else:
                 add_peptide_bond(new_bonded_pairs, ligand_id, 1, new_chain_id, 1)        
         
+        update_residue_mapping_for_terminal_split(residue_mapping, split_chain_id, split_chain_id_orig,
+                                                ligand_seq_num, ligand_seq_num_old, len(split_chain_sequence), is_c_terminal, new_chain_id)
     else:
         # Internal residue - split into two parts
         update_residue_mapping_for_internal_split(residue_mapping, split_chain_id, split_chain_id_orig,
@@ -391,16 +392,20 @@ def process_chain_bond(modified_json: Dict, bond: Tuple, is_intra_chain: bool,re
                             target_mapped["modified_residue_num"], target_atom_name]])
     
     # Add existing bonds (excluding the original bond)
+    bond_new = [[chain1_id, seq_num1, atom_name1],[chain2_id, seq_num2, atom_name2]]
     for existing_bond in modified_json.get("bondedAtomPairs", []):
-        if tuple(existing_bond) != bond:
+        if existing_bond != bond_new:
             new_bonded_pairs.append(existing_bond)
+    
+    if modified_json.get("name") == "1trz_bioass_1":
+        pass
     
     # Correct existing bonds to the new naming and sequence of the chain
     if is_ligand_terminal:
         part_a_id, part_b_id = f"{split_chain_id}A", f"{split_chain_id}B"
-        modified_json["bondedAtomPairs"] = correct_chain_and_resnum(new_bonded_pairs, split_chain_id, ligand_seq_num, ligand_id, part_a_id, part_b_id)
+        new_bonded_pairs = correct_chain_and_resnum(new_bonded_pairs, split_chain_id, ligand_seq_num, ligand_id, part_a_id, part_b_id)
     else:
-        modified_json["bondedAtomPairs"] = correct_chain_and_resnum(new_bonded_pairs, split_chain_id, ligand_seq_num, ligand_id, part_a_id, part_b_id)
+        new_bonded_pairs = correct_chain_and_resnum(new_bonded_pairs, split_chain_id, ligand_seq_num, ligand_id, part_a_id, part_b_id)
         
     modified_json["sequences"] = new_sequences
     modified_json["bondedAtomPairs"] = new_bonded_pairs
