@@ -1,7 +1,65 @@
-# model_protein_bond
+# AF3 Protein-Protein Bond Modeling Tool
 
-## Pseudo Code
+A Python tool for modeling protein-protein bonds in AlphaFold3 structures using ligand bridges. This tool processes JSON files containing protein structure data and converts direct protein-protein bonds into chemically realistic ligand-mediated connections.
 
+## Overview
+
+This tool addresses the challenge of representing protein-protein bonds in structural biology by:
+- Converting amino acids involved in protein-protein bonds into ligand molecules
+- Splitting protein chains appropriately to maintain proper connectivity
+- Creating chemically realistic bond networks through ligand intermediates
+
+## Quick Start
+
+### Prerequisites
+- Python 3.7+
+- Input JSON files with AlphaFold3 structure data
+
+### Installation
+```bash
+git clone <repository-url>
+cd model-protein-bond
+```
+
+### Basic Usage
+```bash
+# Process all JSON files in the input directory
+python model_protein_bonds_hack.py --source-dir test_files/input/ --output-dir test_files/output/
+
+# With verbose output
+python model_protein_bonds_hack.py -s test_files/input/ -o test_files/output/ --verbose
+```
+
+### File Structure
+```
+model-protein-bond/
+├── model_protein_bonds_hack.py    # Main processing script
+├── README.md                      # This file
+├── tests.py                       # Test suite
+└── test_files/
+    ├── input/                     # Input JSON files
+    ├── output/                    # Generated output files
+    └── solution/                  # Reference solutions
+```
+
+## Command Line Options
+
+| Option | Short | Description | Default |
+|--------|-------|-------------|---------|
+| `--source-dir` | `-s` | Directory containing input JSON files | `test_files/input/` |
+| `--output-dir` | `-o` | Directory for output files | `test_files/output/` |
+| `--verbose` | `-v` | Enable detailed output | `False` |
+
+## Example Usage
+```bash
+# Process files from custom directories
+python model_protein_bonds_hack.py --source-dir input/ --output-dir output/
+python model_protein_bonds_hack.py -s input/ -o output/ --verbose
+```
+
+## How It Works
+
+### Algorithm Overview
 ### 1. Parse Input Files (`load_json_files()`)
 - Go through all JSONs in a specified directory and parse them
 - Go through the `bondedAtomPairs` and check whether the bond is between two proteins (`find_protein_protein_bonds()`)
@@ -33,3 +91,75 @@ If the amino acid is internal to the chain:
 
 ### 4. Main Processing (`process_json_files()`, `main()`)
 - Orchestrates the entire workflow for all JSON files in the input directory
+
+## Input/Output Format
+
+### Input Files
+- **Format**: JSON files containing AlphaFold3 structure data
+- **Required fields**: 
+  - `sequences`: Array of protein/ligand sequence definitions
+  - `bondedAtomPairs`: Array of atomic bonds in the structure
+- **Location**: Specified by `--source-dir` parameter
+
+### Output Files
+- **Format**: Modified JSON files with ligand bridge representations
+- **Naming**: Original filename with `_modified.json` suffix
+- **Location**: Specified by `--output-dir` parameter
+
+### Example Transformation
+```
+Original: protein_structure.json
+Output:   protein_structure_modified.json
+```
+
+## Chain ID Conventions
+
+When the tool processes protein-protein bonds, it creates new chain identifiers:
+
+| Original | After Processing | Description |
+|----------|------------------|-------------|
+| `A` | `AA`, `AL`, `AB` | Chain A split with ligand L between parts A and B |
+| `B` | `BA`, `BL` | Chain B terminal residue becomes ligand L |
+
+## Testing
+
+Run the test suite to verify functionality:
+```bash
+python tests.py
+```
+
+Tests compare generated output files with reference solutions in `test_files/solution/`.
+
+## Troubleshooting
+
+### Common Issues
+
+**No protein-protein bonds found**
+- Verify input JSON contains `bondedAtomPairs` between protein chains
+- Check that protein sequences are properly defined in `sequences` array
+
+**Missing input files**
+- Ensure the source directory exists and contains `.json` files
+- Check file permissions for read access
+
+**Output errors**
+- Verify write permissions for output directory
+- Ensure sufficient disk space
+
+## Technical Details
+
+### Supported Bond Types
+- **Inter-chain bonds**: Between different protein chains
+- **Intra-chain bonds**: Within the same protein chain (creates loops)
+
+### Chemical Accuracy
+- Uses standard CCD (Chemical Component Dictionary) codes for amino acids
+- Maintains proper peptide bond geometry (C-N connections)
+- Preserves original atomic bond information where possible
+
+## Contributing
+
+When contributing to this project:
+1. Run tests to ensure functionality is preserved
+2. Update documentation for any new features
+3. Follow existing code style and naming conventions
