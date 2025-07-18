@@ -6,45 +6,20 @@ This script processes AlphaFold3 JSON files to model protein-protein bonds
 using ligand bridges. It identifies bonds between protein chains and modifies 
 the structure to represent these bonds through intermediate ligand molecules.
 
+The algorithm works by:
+1. Identifying protein-protein bonds from bondedAtomPairs
+2. Converting one of the bonded amino acids into a ligand molecule
+3. Splitting the original chain and creating new chain segments
+4. Establishing bonds through the ligand as an intermediate bridge
+
+This approach allows modeling of complex protein interactions while maintaining
+proper chemical connectivity through ligand intermediates.
+
 Usage:
     python model_protein_bonds_hack.py --source-dir input/ --output-dir output/
     python model_protein_bonds_hack.py -s input/ -o output/ --verbose
 
-# model_protein_bond
-
-## Pseudo Code
-
-### 1. Parse Input Files (`load_json_files()`)
-- Go through all JSONs in a specified directory and parse them
-- Go through the `bondedAtomPairs` and check whether the bond is between two proteins (`find_protein_protein_bonds()`)
-- Collect protein-protein bonds in a data structure called `protein_protein_bonds`
-
-### 2. Initialize Data Structure (`initialize_residue_mapping()`)
-- Initialize a dictionary that maps every amino acid in every chain to its modified ID and residue number
-- Initialize with each residue's own chain ID and residue number
-
-### 3. Process Protein-Protein Bonds (`model_bond_with_ligand()`)
-For each protein-protein bond, call `model_bond_with_ligand()` function which calls `process_chain_bond()`:
-
-#### Case A: Terminal Amino Acid Bond (`is_terminal_residue()`)
-If one amino acid is at the end/beginning of the protein chain:
-- **Chop off** the terminal amino acid and model it as a ligand (`create_ligand_from_residue()`)
-- **Update chain IDs** (`create_protein_sequence()`): 
-  - First part: `chainId + A`
-  - Ligand: `chainId + L` 
-  - Second part: `chainId + B`
-- **Update dictionary** (`update_residue_mapping_for_terminal_split()`) with new IDs and adjusted residue numbers
-- **Adjust bondedAtomPairs** (`correct_chain_and_resnum()`, `add_peptide_bond()`) to model the bond using the ligand as a bridge
-
-#### Case B: Internal Amino Acid Bond  
-If the amino acid is internal to the chain:
-- **Chop out** the amino acid and model it as a ligand (`create_ligand_from_residue()`)
-- **Add bonds** (`add_peptide_bond()`) to connect the ligand to its original chain
-- **Update mapping** (`update_residue_mapping_for_internal_split()`)
-- **Model the bond** using the ligand as a "bridge with three connections"
-
-### 4. Main Processing (`process_json_files()`, `main()`)
-- Orchestrates the entire workflow for all JSON files in the input directory
+Author: Ricardo Heinzmann
 """
 
 import json
@@ -111,13 +86,18 @@ def initialize_residue_mapping(json_data: Dict) -> Dict[str, Dict[int, Dict[str,
 
 def find_protein_protein_bonds(json_data: Dict) -> List[Tuple]:
     """
-    Identify bonds between two protein chains from bondedAtomPairs.
+    Identify bonds between protein chains from bondedAtomPairs.
+    
+    Scans through all bonded atom pairs in the AlphaFold3 structure and identifies
+    bonds that occur between protein chains (inter-chain) or within the same 
+    protein chain (intra-chain). Both types are considered for ligand bridge modeling.
     
     Args:
-        json_data: The AlphaFold3 JSON structure
+        json_data: The AlphaFold3 JSON structure containing sequences and bonds
         
     Returns:
-        List of tuples representing protein-protein bonds
+        List of tuples representing protein-protein bonds, where each tuple contains
+        two bond endpoints: ((chain1, residue1, atom1), (chain2, residue2, atom2))
     """
     protein_bonds = []
     
@@ -177,6 +157,21 @@ def update_residue_mapping_for_terminal_split(residue_mapping: Dict, split_chain
                                             is_c_terminal: bool, new_chain_id) -> None:
     """
     Update residue mapping when splitting a chain at terminal position.
+    
+    When a terminal amino acid is converted to a ligand, this function updates
+    the residue mapping to reflect the new chain structure. For C-terminal splits,
+    the chain is shortened by removing the last residue. For N-terminal splits,
+    the first residue becomes a ligand and remaining residues are renumbered.
+    
+    Args:
+        residue_mapping: Dictionary tracking original to modified residue mappings
+        split_chain_id: Current chain ID being split (e.g. AAB, BAA)
+        split_chain_id_orig: Original chain ID from input structure (e.g. A, B)
+        ligand_seq_num: Position of residue becoming ligand (in new numbering)
+        ligand_seq_num_old: Position of residue becoming ligand (in original numbering)
+        sequence_length: Length of the original chain sequence
+        is_c_terminal: True if splitting at C-terminus, False for N-terminus
+        new_chain_id: ID for the resulting chain after ligand removal
     """
     if is_c_terminal:
         # C-terminal split: chain keeps positions 1 to split_position-1
@@ -201,8 +196,19 @@ def update_residue_mapping_for_terminal_split(residue_mapping: Dict, split_chain
 def update_residue_mapping_for_internal_split(residue_mapping, split_chain_id, split_chain_id_orig,
                                                 ligand_seq_num, ligand_seq_num_old, ligand_length) -> None:
     """
-    Update residue mapping when splitting a chain at internal position.
+    Update residue mapping when splitting a chain at an internal position.
     
+    When an internal amino acid is converted to a ligand, the original chain
+    is split into two parts (A and B) with the ligand (L) as a bridge between them.
+    This function updates the residue mapping to reflect this three-way split.
+    
+    Args:
+        residue_mapping: Dictionary tracking original to modified residue mappings
+        split_chain_id: Current chain ID being split
+        split_chain_id_orig: Original chain ID from input structure
+        ligand_seq_num: Position of residue becoming ligand (in new numbering)
+        ligand_seq_num_old: Position of residue becoming ligand (in original numbering)
+        ligand_length: Total length of the original chain sequence
     """
     basepos = ligand_seq_num_old - ligand_seq_num
     # Part A: residues 1 to split_position-1
@@ -259,7 +265,20 @@ def get_amino_acid_ccd_map():
     }
 
 def create_ligand_from_residue(chain_id: str, residue_char: str, ligand_suffix: str = "L") -> Dict:
-    """Create a ligand sequence entry from an amino acid residue."""
+    """
+    Create a ligand sequence entry from an amino acid residue.
+    
+    Converts a single amino acid character into a ligand molecule entry
+    using the appropriate CCD (Chemical Component Dictionary) code.
+    
+    Args:
+        chain_id: Base chain identifier
+        residue_char: Single letter amino acid code (e.g., 'A', 'G', 'L')
+        ligand_suffix: Suffix to append to chain_id for ligand identification
+        
+    Returns:
+        Dictionary representing a ligand sequence entry with CCD code
+    """
     aa_to_ccd = get_amino_acid_ccd_map()
     ligand_ccd = aa_to_ccd.get(residue_char, 'UNK')
     
@@ -280,19 +299,51 @@ def create_protein_sequence(chain_id: str, sequence: str) -> Dict:
     }
 
 def add_peptide_bond(new_bonded_pairs: List, chain1_id: str, chain1_pos: int, chain2_id: str, chain2_pos: int):
-    """Add a peptide bond between two chains."""
+    """
+    Add a peptide bond between two chains.
+    
+    Creates a peptide bond by connecting the C-terminus of the first chain
+    to the N-terminus of the second chain, following standard protein chemistry.
+    
+    Args:
+        new_bonded_pairs: List to append the new bond to
+        chain1_id: ID of the first chain (C-terminus)
+        chain1_pos: Residue position in first chain
+        chain2_id: ID of the second chain (N-terminus)
+        chain2_pos: Residue position in second chain
+    """
     new_bonded_pairs.append([[chain1_id, chain1_pos, "C"], [chain2_id, chain2_pos, "N"]])
     
 def correct_chain_and_resnum(bondedAtomPairs, split_chain_id, ligand_seq_num, ligand_id, part_a_id, part_b_id):
+    """
+    Correct chain IDs and residue numbers in existing bonds after chain splitting.
+    
+    When a chain is split into parts (A, L, B), all existing bonds involving
+    that chain need to be updated to use the new chain IDs and adjusted residue
+    numbers. This function systematically updates all bond references.
+    
+    Args:
+        bondedAtomPairs: List of existing bonded atom pairs to update
+        split_chain_id: Original chain ID that was split
+        ligand_seq_num: Position where the ligand was extracted
+        ligand_id: New ID for the ligand molecule
+        part_a_id: New ID for the first part of the split chain
+        part_b_id: New ID for the second part of the split chain
+        
+    Returns:
+        Updated list of bonded atom pairs with corrected chain IDs and positions
+    """
     def helper(c,s):
-        if c == split_chain_id: # info has to be edited
+        """Helper function to update chain ID and sequence number for bond correction."""
+        if c == split_chain_id: # Bond involves the chain that was split
             if s == ligand_seq_num:
+                # Bond to the ligand residue
                 c, s = ligand_id, 1
             elif s < ligand_seq_num:
-                # is bond to first part of chain
+                # Bond to first part of chain (part A)
                 c, s = part_a_id, s 
             else:
-                # is bond to second part of chain
+                # Bond to second part of chain (part B), adjust numbering
                 c, s = part_b_id, s - ligand_seq_num
         return c, s
     new_bonded_atoms = []
@@ -309,7 +360,28 @@ def correct_chain_and_resnum(bondedAtomPairs, split_chain_id, ligand_seq_num, li
     return new_bonded_atoms
 
 def process_chain_bond(modified_json: Dict, bond: Tuple, is_intra_chain: bool,residue_mapping: Dict, original_json: Dict) -> Dict:
-    """Process bonds between different chains."""
+    """
+    Process protein-protein bonds by converting amino acids to ligand bridges.
+    
+    This is the core function that implements the ligand bridge modeling algorithm.
+    It decides which amino acid to convert to a ligand (preferring terminal residues),
+    splits the chain appropriately, creates the ligand molecule, and establishes
+    proper connectivity through the ligand intermediate.
+    
+    The algorithm handles two main cases:
+    1. Terminal residues: Chain is shortened, ligand connects to remaining chain
+    2. Internal residues: Chain splits into A-L-B structure with three connections
+    
+    Args:
+        modified_json: JSON structure being modified
+        bond: Tuple representing the protein bond to process
+        is_intra_chain: Whether the bond is within the same chain
+        residue_mapping: Dictionary tracking residue position mappings
+        original_json: Original unmodified JSON structure
+        
+    Returns:
+        Modified JSON structure with ligand bridge representation
+    """
     atom1, atom2 = bond
     chain1_id_orig, seq_num1_old, atom_name1 = atom1
     chain2_id_orig, seq_num2_old, atom_name2 = atom2
@@ -328,7 +400,7 @@ def process_chain_bond(modified_json: Dict, bond: Tuple, is_intra_chain: bool,re
     chain1_sequence = chain1_info["sequence"]
     chain2_sequence = chain2_info["sequence"]
     
-    # Determine which residue to use as ligand (prefer terminal residues)
+    # Determine which residue to use as ligand (prefer terminal residues for simpler structure)
     chain1_is_terminal = is_terminal_residue(chain1_sequence, seq_num1)
     chain2_is_terminal = is_terminal_residue(chain2_sequence, seq_num2)
     use_chain1_for_split = chain1_is_terminal or not chain2_is_terminal
@@ -367,11 +439,13 @@ def process_chain_bond(modified_json: Dict, bond: Tuple, is_intra_chain: bool,re
         split_chain_sequence = chain2_sequence
         is_ligand_terminal = chain2_is_terminal
     
-    # Create ligand
+    # Create ligand from selected amino acid
     ligand_id = f"{split_chain_id}L"
     new_sequences.append(create_ligand_from_residue(split_chain_id, ligand_residue))
     
-    # Handle ligand chain splitting
+    # Handle chain splitting based on ligand position
+    # Terminal: Chain -> Chain + Ligand (2 parts)
+    # Internal: Chain -> ChainA + Ligand + ChainB (3 parts)
     if is_ligand_terminal:
         is_c_terminal = ligand_seq_num == len(split_chain_sequence)
         
@@ -425,16 +499,13 @@ def process_chain_bond(modified_json: Dict, bond: Tuple, is_intra_chain: bool,re
                            [target_mapped["modified_chain_id"], 
                             target_mapped["modified_residue_num"], target_atom_name]])
     
-    # Add existing bonds (excluding the original bond)
+    # Add existing bonds (excluding the original bond being replaced)
     bond_new = [[chain1_id, seq_num1, atom_name1],[chain2_id, seq_num2, atom_name2]]
     for existing_bond in modified_json.get("bondedAtomPairs", []):
         if existing_bond != bond_new:
             new_bonded_pairs.append(existing_bond)
     
-    if modified_json.get("name") == "1trz_bioass_1":
-        pass
-    
-    # Correct existing bonds to the new naming and sequence of the chain
+    # Correct existing bonds to use new chain IDs and residue numbering
     if is_ligand_terminal:
         part_a_id, part_b_id = f"{split_chain_id}A", f"{split_chain_id}B"
         new_bonded_pairs = correct_chain_and_resnum(new_bonded_pairs, split_chain_id, ligand_seq_num, ligand_id, part_a_id, part_b_id)
