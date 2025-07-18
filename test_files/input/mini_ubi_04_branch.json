@@ -1,0 +1,72 @@
+{
+  "name": "mini_ubi_04",
+  "sequences": [
+    {
+      "protein": {
+        "id": "A",
+        "sequence": "MINI"
+      }
+    },
+    {
+      "protein": {
+        "id": "B",
+        "sequence": "MINI"
+      }
+    },
+    {
+      "protein": {
+        "id": "C",
+        "sequence": "MINI"
+      }
+    },
+    {
+      "protein": {
+        "id": "D",
+        "sequence": "MINI"
+      }
+    }
+  ],
+  "modelSeeds": [
+    1
+  ],
+  "dialect": "alphafold3",
+  "bondedAtomPairs": [
+    [
+      [
+        "A",
+        3,
+        "C"
+      ],
+      [
+        "B",
+        2,
+        "SG"
+      ]
+    ],
+    [
+      [
+        "A",
+        2,
+        "C"
+      ],
+      [
+        "C",
+        2,
+        "SG"
+      ]
+    ],
+    [
+      [
+        "C",
+        4,
+        "C"
+      ],
+      [
+        "D",
+        2,
+        "SG"
+      ]
+    ]
+  ],
+  "version": 1
+}

@@ -1,0 +1,60 @@
+{
+  "name": "7nbb",
+  "sequences": [
+    {
+      "protein": {
+        "id": "A",
+        "sequence": "MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLR"
+      }
+    },
+    {
+      "protein": {
+        "id": "B",
+        "sequence": "MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGRQLEDGRTLSDYNIQRESTLHLVLRLRGG"
+      }
+    },
+    {
+      "protein": {
+        "id": "C",
+        "sequence": "MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGRQLEDGRTLSDYNIQRESTLHLVLRLRGG"
+      }
+    },
+    {
+      "protein": {
+        "id": "D",
+        "sequence": "MGQVQLQESGGGLVQAGGSLRLSCAASGSIFDLGRMGWYRQAPGKEREFVAGIDYGGNTNYADSVKGRFTISRDNDTVYLQMNSLKPEDTAVYYCAAGIVGDVVGWIYYLYWGQGTQVTVSSGENLYFQ"
+      }
+    }
+  ],
+  "modelSeeds": [
+    1
+  ],
+  "dialect": "alphafold3",
+  "bondedAtomPairs": [
+    [
+      [
+        "A",
+        48,
+        "NZ"
+      ],
+      [
+        "B",
+        76,
+        "C"
+      ]
+    ],
+    [
+      [
+        "A",
+        63,
+        "NZ"
+      ],
+      [
+        "C",
+        76,
+        "C"
+      ]
+    ]
+  ],
+  "version": 1
+}

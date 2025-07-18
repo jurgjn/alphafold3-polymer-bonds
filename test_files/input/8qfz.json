@@ -1,0 +1,48 @@
+{
+  "name": "8qfz",
+  "sequences": [
+    {
+      "protein": {
+        "id": "A",
+        "sequence": "MYDFTNCDFEKIKAAYLSTISKDLITYMSGTKSTEFNNTVSCSNRPHCLTEIQSLTFNPTAGCASLAKEMFAMKTKAALAIWCPGYSETQINATQAMKKRRKRKVTTNKCLEQVSQLQGLWRRFNRPL"
+      }
+    },
+    {
+      "protein": {
+        "id": "B",
+        "sequence": "CHWLENCWRGFC"
+      }
+    }
+  ],
+  "modelSeeds": [
+    1
+  ],
+  "dialect": "alphafold3",
+  "bondedAtomPairs": [
+    [
+      [
+        "A",
+        5,
+        "C"
+      ],
+      [
+        "B",
+        4,
+        "NZ"
+      ]
+    ],
+    [
+      [
+        "A",
+        1,
+        "CB"
+      ],
+      [
+        "B",
+        1,
+        "CG"
+      ]
+    ]
+  ],
+  "version": 1
+}

@@ -1,52 +1,52 @@
 {
-  "name": "1trz_bioass_1",
+  "name": "mini_ubi_01",
   "sequences": [
     {
       "ligand": {
-        "id": "ABL",
+        "id": "CL",
         "ccdCodes": [
-          "CYS"
+          "ILE"
         ]
       }
     },
     {
       "protein": {
-        "id": "ABB",
-        "sequence": "TSICSLYQLENYCN"
-      }
-    },
-    {
-      "ligand": {
-        "id": "AL",
-        "ccdCodes": [
-          "CYS"
-        ]
-      }
-    },
-    {
-      "protein": {
-        "id": "AA",
-        "sequence": "GIVEQ"
+        "id": "CA",
+        "sequence": "MIN"
       }
     },
     {
       "ligand": {
         "id": "BL",
         "ccdCodes": [
-          "CYS"
+          "ILE"
         ]
       }
     },
     {
       "protein": {
         "id": "BA",
-        "sequence": "FVNQHLCGSHLVEALYLV"
+        "sequence": "MIN"
+      }
+    },
+    {
+      "ligand": {
+        "id": "AL",
+        "ccdCodes": [
+          "ILE"
+        ]
       }
     },
     {
       "protein": {
-        "id": "BB",
-        "sequence": "GERGFFYTPKT"
+        "id": "AA",
+        "sequence": "MIN"
+      }
+    },
+    {
+      "protein": {
+        "id": "D",
+        "sequence": "MINI"
       }
     }
   ],
@@ -57,32 +57,56 @@
   "bondedAtomPairs": [
     [
       [
-        "ABL",
-        1,
+        "CA",
+        3,
         "C"
       ],
       [
-        "ABB",
+        "CL",
         1,
         "N"
       ]
     ],
     [
       [
-        "ABL",
+        "CL",
         1,
-        "SG"
+        "C"
       ],
       [
+        "D",
+        2,
+        "SG"
+      ]
+    ],
+    [
+      [
         "BA",
-        7,
+        3,
+        "C"
+      ],
+      [
+        "BL",
+        1,
+        "N"
+      ]
+    ],
+    [
+      [
+        "BL",
+        1,
+        "C"
+      ],
+      [
+        "CA",
+        2,
         "SG"
       ]
     ],
     [
       [
         "AA",
-        5,
+        3,
         "C"
       ],
       [
@@ -97,57 +121,9 @@
         1,
         "C"
       ],
-      [
-        "ABL",
-        1,
-        "N"
-      ]
-    ],
-    [
-      [
-        "AL",
-        1,
-        "SG"
-      ],
-      [
-        "ABB",
-        4,
-        "SG"
-      ]
-    ],
-    [
       [
         "BA",
-        18,
-        "C"
-      ],
-      [
-        "BL",
-        1,
-        "N"
-      ]
-    ],
-    [
-      [
-        "BL",
-        1,
-        "C"
-      ],
-      [
-        "BB",
-        1,
-        "N"
-      ]
-    ],
-    [
-      [
-        "BL",
-        1,
-        "SG"
-      ],
-      [
-        "ABB",
-        13,
+        2,
         "SG"
       ]
     ]
