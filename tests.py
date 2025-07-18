@@ -2,6 +2,7 @@ import json
 import unittest
 import subprocess
 import sys
+import difflib
 from pathlib import Path
 
 class TestBondModeling(unittest.TestCase):
@@ -28,6 +29,35 @@ class TestBondModeling(unittest.TestCase):
         except Exception as e:
             print(f"Error comparing {file1_path} and {file2_path}: {e}")
             return False
+    
+    def show_json_diff(self, output_file, solution_file):
+        """Show differences between two JSON files."""
+        try:
+            with open(output_file, 'r') as f1:
+                output_json = json.load(f1)
+            with open(solution_file, 'r') as f2:
+                solution_json = json.load(f2)
+            
+            output_str = json.dumps(output_json, indent=2, sort_keys=True)
+            solution_str = json.dumps(solution_json, indent=2, sort_keys=True)
+            
+            diff = difflib.unified_diff(
+                solution_str.splitlines(keepends=True),
+                output_str.splitlines(keepends=True),
+                fromfile=f"Expected: {solution_file.name}",
+                tofile=f"Actual: {output_file.name}",
+                lineterm=""
+            )
+            
+            diff_text = ''.join(diff)
+            if diff_text:
+                print(f"\n{'='*60}")
+                print(f"DIFFERENCES for {output_file.name}:")
+                print(f"{'='*60}")
+                print(diff_text)
+                print(f"{'='*60}\n")
+        except Exception as e:
+            print(f"Error creating diff: {e}")
     
     def test_json_files(self):
         """Test all JSON files in input folder against solution folder."""
@@ -75,10 +105,13 @@ class TestBondModeling(unittest.TestCase):
                 # Compare the files
                 files_match = self.compare_json_files(output_file, solution_file)
                 
+                if not files_match:
+                    self.show_json_diff(output_file, solution_file)
+                
                 self.assertTrue(files_match, 
                               f"Generated file {output_file.name} does not match solution {solution_file.name}")
-        
-        print(f"\nAll {len(input_files)} test files passed!")
+                
+                print(f"✓ {input_file.name} - PASSED")
 
 if __name__ == "__main__":
     unittest.main()
