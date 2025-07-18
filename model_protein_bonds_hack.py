@@ -249,7 +249,30 @@ def add_peptide_bond(new_bonded_pairs: List, chain1_id: str, chain1_pos: int, ch
     """Add a peptide bond between two chains."""
     new_bonded_pairs.append([[chain1_id, chain1_pos, "C"], [chain2_id, chain2_pos, "N"]])
     
-#def update_bonded_pairs_id_and_resnum(json_data: Dict, chain: str, seq_num, ) -> Dict:
+def correct_chain_and_resnum(bondedAtomPairs, split_chain_id, ligand_seq_num, ligand_id, part_a_id, part_b_id):
+    def helper(c,s):
+        if c == split_chain_id: # info has to be edited
+            if s == ligand_seq_num:
+                c, s = ligand_id, 1
+            elif s < ligand_seq_num:
+                # is bond to first part of chain
+                c, s = part_a_id, s - 1 
+            else:
+                # is bond to second part of chain
+                c, s = part_b_id, s - ligand_seq_num
+        return c, s
+    new_bonded_atoms = []
+    for pair in bondedAtomPairs:
+        if len(pair) != 2:
+            print(f"Warning: Skipping malformed bond pair {pair}")
+            raise ValueError("Bonded atom pair must have exactly two elements")
+        p1,p2 = pair
+        [c1,s1,a1] = p1
+        [c2,s2,a2] = p2 
+        c1, s1 = helper(c1, s1)
+        c2, s2 = helper(c2, s2)
+        new_bonded_atoms.append([[c1, s1, a1], [c2, s2, a2]])
+    return new_bonded_atoms
 
 def process_chain_bond(modified_json: Dict, bond: Tuple, is_intra_chain: bool,residue_mapping: Dict, original_json: Dict) -> Dict:
     """Process bonds between different chains."""
@@ -292,7 +315,7 @@ def process_chain_bond(modified_json: Dict, bond: Tuple, is_intra_chain: bool,re
         target_seq_num_old = seq_num2_old
         target_seq_num = seq_num2
         target_atom_name = atom_name2
-        ligand_sequence = chain1_sequence
+        split_chain_sequence = chain1_sequence
         is_ligand_terminal = chain1_is_terminal
     else:
         # Convert chain2 residue to ligand
@@ -307,7 +330,7 @@ def process_chain_bond(modified_json: Dict, bond: Tuple, is_intra_chain: bool,re
         target_seq_num = seq_num1
         target_seq_num_old = seq_num1_old
         target_atom_name = atom_name1
-        ligand_sequence = chain2_sequence
+        split_chain_sequence = chain2_sequence
         is_ligand_terminal = chain2_is_terminal
     
     # Create ligand
@@ -316,16 +339,15 @@ def process_chain_bond(modified_json: Dict, bond: Tuple, is_intra_chain: bool,re
     
     # Handle ligand chain splitting
     if is_ligand_terminal:
-        is_c_terminal = ligand_seq_num == len(ligand_sequence)
+        is_c_terminal = ligand_seq_num == len(split_chain_sequence)
         update_residue_mapping_for_terminal_split(residue_mapping, split_chain_id, split_chain_id_orig,
-                                                ligand_seq_num, ligand_seq_num_old, len(ligand_sequence), is_c_terminal)
+                                                ligand_seq_num, ligand_seq_num_old, len(split_chain_sequence), is_c_terminal)
         
+        new_chain_id = f"{split_chain_id}A"
         if is_c_terminal:
-            modified_sequence = ligand_sequence[:-1]
-            new_chain_id = f"{split_chain_id}A"
+            modified_sequence = split_chain_sequence[:-1]
         else:
-            modified_sequence = ligand_sequence[1:]
-            new_chain_id = f"{split_chain_id}A"
+            modified_sequence = split_chain_sequence[1:]
         
         if modified_sequence:
             new_sequences.append(create_protein_sequence(new_chain_id, modified_sequence))
@@ -334,14 +356,15 @@ def process_chain_bond(modified_json: Dict, bond: Tuple, is_intra_chain: bool,re
             if is_c_terminal:
                 add_peptide_bond(new_bonded_pairs, new_chain_id, len(modified_sequence), ligand_id, 1)
             else:
-                add_peptide_bond(new_bonded_pairs, ligand_id, 1, new_chain_id, 1)
+                add_peptide_bond(new_bonded_pairs, ligand_id, 1, new_chain_id, 1)        
+        
     else:
         # Internal residue - split into two parts
         update_residue_mapping_for_internal_split(residue_mapping, split_chain_id, split_chain_id_orig,
-                                                ligand_seq_num, ligand_seq_num_old, len(ligand_sequence))
+                                                ligand_seq_num, ligand_seq_num_old, len(split_chain_sequence))
         
-        part_a_sequence = ligand_sequence[:ligand_seq_num-1]
-        part_b_sequence = ligand_sequence[ligand_seq_num:]
+        part_a_sequence = split_chain_sequence[:ligand_seq_num-1]
+        part_b_sequence = split_chain_sequence[ligand_seq_num:]
         
         if part_a_sequence:
             part_a_id = f"{split_chain_id}A"
@@ -352,6 +375,7 @@ def process_chain_bond(modified_json: Dict, bond: Tuple, is_intra_chain: bool,re
             part_b_id = f"{split_chain_id}B"
             new_sequences.append(create_protein_sequence(part_b_id, part_b_sequence))
             add_peptide_bond(new_bonded_pairs, ligand_id, 1, part_b_id, 1)
+    
     
     # Add other sequences unchanged (excluding the ligand chain)
     for sequence in modified_json["sequences"]:
@@ -371,6 +395,12 @@ def process_chain_bond(modified_json: Dict, bond: Tuple, is_intra_chain: bool,re
         if tuple(existing_bond) != bond:
             new_bonded_pairs.append(existing_bond)
     
+    # Correct existing bonds to the new naming and sequence of the chain
+    if is_ligand_terminal:
+        part_a_id, part_b_id = f"{split_chain_id}A", f"{split_chain_id}B"
+        modified_json["bondedAtomPairs"] = correct_chain_and_resnum(new_bonded_pairs, split_chain_id, ligand_seq_num, ligand_id, part_a_id, part_b_id)
+    else:
+        modified_json["bondedAtomPairs"] = correct_chain_and_resnum(new_bonded_pairs, split_chain_id, ligand_seq_num, ligand_id, part_a_id, part_b_id)
         
     modified_json["sequences"] = new_sequences
     modified_json["bondedAtomPairs"] = new_bonded_pairs
