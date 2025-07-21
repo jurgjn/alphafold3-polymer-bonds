@@ -1,0 +1,150 @@
+{
+  "name": "mini_ubi_04",
+  "sequences": [
+    {
+      "ligand": {
+        "id": "CL",
+        "ccdCodes": [
+          "ILE"
+        ]
+      }
+    },
+    {
+      "protein": {
+        "id": "CA",
+        "sequence": "MIN"
+      }
+    },
+    {
+      "ligand": {
+        "id": "AAL",
+        "ccdCodes": [
+          "ILE"
+        ]
+      }
+    },
+    {
+      "protein": {
+        "id": "AAA",
+        "sequence": "M"
+      }
+    },
+    {
+      "ligand": {
+        "id": "AL",
+        "ccdCodes": [
+          "ASN"
+        ]
+      }
+    },
+    {
+      "protein": {
+        "id": "AB",
+        "sequence": "I"
+      }
+    },
+    {
+      "protein": {
+        "id": "B",
+        "sequence": "MINI"
+      }
+    },
+    {
+      "protein": {
+        "id": "D",
+        "sequence": "MINI"
+      }
+    }
+  ],
+  "modelSeeds": [
+    1
+  ],
+  "dialect": "alphafold3",
+  "bondedAtomPairs": [
+    [
+      [
+        "CA",
+        3,
+        "C"
+      ],
+      [
+        "CL",
+        1,
+        "N"
+      ]
+    ],
+    [
+      [
+        "CL",
+        1,
+        "C"
+      ],
+      [
+        "D",
+        2,
+        "SG"
+      ]
+    ],
+    [
+      [
+        "AAA",
+        1,
+        "C"
+      ],
+      [
+        "AAL",
+        1,
+        "N"
+      ]
+    ],
+    [
+      [
+        "AAL",
+        1,
+        "C"
+      ],
+      [
+        "CA",
+        2,
+        "SG"
+      ]
+    ],
+    [
+      [
+        "AAL",
+        1,
+        "C"
+      ],
+      [
+        "AL",
+        1,
+        "N"
+      ]
+    ],
+    [
+      [
+        "AL",
+        1,
+        "C"
+      ],
+      [
+        "AB",
+        1,
+        "N"
+      ]
+    ],
+    [
+      [
+        "AL",
+        1,
+        "C"
+      ],
+      [
+        "B",
+        2,
+        "SG"
+      ]
+    ]
+  ],
+  "version": 1
+}

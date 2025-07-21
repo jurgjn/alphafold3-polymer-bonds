@@ -1,0 +1,164 @@
+{
+  "name": "mini_ubi_03",
+  "sequences": [
+    {
+      "ligand": {
+        "id": "DL",
+        "ccdCodes": [
+          "ILE"
+        ]
+      }
+    },
+    {
+      "protein": {
+        "id": "DA",
+        "sequence": "MIN"
+      }
+    },
+    {
+      "ligand": {
+        "id": "CL",
+        "ccdCodes": [
+          "ILE"
+        ]
+      }
+    },
+    {
+      "protein": {
+        "id": "CA",
+        "sequence": "MIN"
+      }
+    },
+    {
+      "ligand": {
+        "id": "BL",
+        "ccdCodes": [
+          "ILE"
+        ]
+      }
+    },
+    {
+      "protein": {
+        "id": "BA",
+        "sequence": "MIN"
+      }
+    },
+    {
+      "ligand": {
+        "id": "AL",
+        "ccdCodes": [
+          "ILE"
+        ]
+      }
+    },
+    {
+      "protein": {
+        "id": "AA",
+        "sequence": "MIN"
+      }
+    }
+  ],
+  "modelSeeds": [
+    1
+  ],
+  "dialect": "alphafold3",
+  "bondedAtomPairs": [
+    [
+      [
+        "DA",
+        3,
+        "C"
+      ],
+      [
+        "DL",
+        1,
+        "N"
+      ]
+    ],
+    [
+      [
+        "DL",
+        1,
+        "C"
+      ],
+      [
+        "AA",
+        2,
+        "SG"
+      ]
+    ],
+    [
+      [
+        "CA",
+        3,
+        "C"
+      ],
+      [
+        "CL",
+        1,
+        "N"
+      ]
+    ],
+    [
+      [
+        "CL",
+        1,
+        "C"
+      ],
+      [
+        "DA",
+        2,
+        "SG"
+      ]
+    ],
+    [
+      [
+        "BA",
+        3,
+        "C"
+      ],
+      [
+        "BL",
+        1,
+        "N"
+      ]
+    ],
+    [
+      [
+        "BL",
+        1,
+        "C"
+      ],
+      [
+        "CA",
+        2,
+        "SG"
+      ]
+    ],
+    [
+      [
+        "AA",
+        3,
+        "C"
+      ],
+      [
+        "AL",
+        1,
+        "N"
+      ]
+    ],
+    [
+      [
+        "AL",
+        1,
+        "C"
+      ],
+      [
+        "BA",
+        2,
+        "SG"
+      ]
+    ]
+  ],
+  "version": 1
+}

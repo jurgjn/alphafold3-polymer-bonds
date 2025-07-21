@@ -1,0 +1,186 @@
+{
+  "name": "mini_ubi_05",
+  "sequences": [
+    {
+      "ligand": {
+        "id": "CL",
+        "ccdCodes": [
+          "ASN"
+        ]
+      }
+    },
+    {
+      "protein": {
+        "id": "CA",
+        "sequence": "MI"
+      }
+    },
+    {
+      "protein": {
+        "id": "CB",
+        "sequence": "I"
+      }
+    },
+    {
+      "ligand": {
+        "id": "BL",
+        "ccdCodes": [
+          "ASN"
+        ]
+      }
+    },
+    {
+      "protein": {
+        "id": "BA",
+        "sequence": "MI"
+      }
+    },
+    {
+      "protein": {
+        "id": "BB",
+        "sequence": "I"
+      }
+    },
+    {
+      "ligand": {
+        "id": "AL",
+        "ccdCodes": [
+          "ASN"
+        ]
+      }
+    },
+    {
+      "protein": {
+        "id": "AA",
+        "sequence": "MI"
+      }
+    },
+    {
+      "protein": {
+        "id": "AB",
+        "sequence": "I"
+      }
+    },
+    {
+      "protein": {
+        "id": "D",
+        "sequence": "MINI"
+      }
+    }
+  ],
+  "modelSeeds": [
+    1
+  ],
+  "dialect": "alphafold3",
+  "bondedAtomPairs": [
+    [
+      [
+        "CA",
+        2,
+        "C"
+      ],
+      [
+        "CL",
+        1,
+        "N"
+      ]
+    ],
+    [
+      [
+        "CL",
+        1,
+        "C"
+      ],
+      [
+        "CB",
+        1,
+        "N"
+      ]
+    ],
+    [
+      [
+        "CL",
+        1,
+        "C"
+      ],
+      [
+        "D",
+        2,
+        "SG"
+      ]
+    ],
+    [
+      [
+        "BA",
+        2,
+        "C"
+      ],
+      [
+        "BL",
+        1,
+        "N"
+      ]
+    ],
+    [
+      [
+        "BL",
+        1,
+        "C"
+      ],
+      [
+        "BB",
+        1,
+        "N"
+      ]
+    ],
+    [
+      [
+        "BL",
+        1,
+        "C"
+      ],
+      [
+        "CA",
+        2,
+        "SG"
+      ]
+    ],
+    [
+      [
+        "AA",
+        2,
+        "C"
+      ],
+      [
+        "AL",
+        1,
+        "N"
+      ]
+    ],
+    [
+      [
+        "AL",
+        1,
+        "C"
+      ],
+      [
+        "AB",
+        1,
+        "N"
+      ]
+    ],
+    [
+      [
+        "AL",
+        1,
+        "C"
+      ],
+      [
+        "BA",
+        2,
+        "SG"
+      ]
+    ]
+  ],
+  "version": 1
+}

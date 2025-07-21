@@ -1,0 +1,100 @@
+{
+  "name": "7nbb",
+  "sequences": [
+    {
+      "ligand": {
+        "id": "CL",
+        "ccdCodes": [
+          "GLY"
+        ]
+      }
+    },
+    {
+      "protein": {
+        "id": "CA",
+        "sequence": "MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGRQLEDGRTLSDYNIQRESTLHLVLRLRG"
+      }
+    },
+    {
+      "ligand": {
+        "id": "BL",
+        "ccdCodes": [
+          "GLY"
+        ]
+      }
+    },
+    {
+      "protein": {
+        "id": "BA",
+        "sequence": "MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGRQLEDGRTLSDYNIQRESTLHLVLRLRG"
+      }
+    },
+    {
+      "protein": {
+        "id": "A",
+        "sequence": "MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLR"
+      }
+    },
+    {
+      "protein": {
+        "id": "D",
+        "sequence": "MGQVQLQESGGGLVQAGGSLRLSCAASGSIFDLGRMGWYRQAPGKEREFVAGIDYGGNTNYADSVKGRFTISRDNDTVYLQMNSLKPEDTAVYYCAAGIVGDVVGWIYYLYWGQGTQVTVSSGENLYFQ"
+      }
+    }
+  ],
+  "modelSeeds": [
+    1
+  ],
+  "dialect": "alphafold3",
+  "bondedAtomPairs": [
+    [
+      [
+        "CA",
+        75,
+        "C"
+      ],
+      [
+        "CL",
+        1,
+        "N"
+      ]
+    ],
+    [
+      [
+        "CL",
+        1,
+        "C"
+      ],
+      [
+        "A",
+        63,
+        "NZ"
+      ]
+    ],
+    [
+      [
+        "BA",
+        75,
+        "C"
+      ],
+      [
+        "BL",
+        1,
+        "N"
+      ]
+    ],
+    [
+      [
+        "BL",
+        1,
+        "C"
+      ],
+      [
+        "A",
+        48,
+        "NZ"
+      ]
+    ]
+  ],
+  "version": 1
+}
