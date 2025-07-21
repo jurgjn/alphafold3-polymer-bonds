@@ -566,14 +566,14 @@ def main():
     parser.add_argument(
         "--source-dir", 
         "-s", 
-        default="test_files/input/",
-        help="Directory containing input JSON files (default: test_files/input/)"
+        default="input/",
+        help="Directory containing input JSON files (default: input/)"
     )
     parser.add_argument(
         "--output-dir", 
         "-o", 
-        default="test_files/output/",
-        help="Directory to save modified JSON files (default: test_files/output/)"
+        default="output/",
+        help="Directory to save modified JSON files (default: output/)"
     )
     parser.add_argument(
         "--verbose", 
