@@ -90,9 +90,9 @@ class TestBondModeling(unittest.TestCase):
         # Check each processed file against its solution
         for input_file in input_files:
             with self.subTest(file=input_file.name):
-                # Expected output file name (with _modified suffix)
-                output_file = self.output_dir / f"{input_file.stem}_modified.json"
-                solution_file = self.solution_dir / f"{input_file.stem}_modified.json"
+                # Expected output file name
+                output_file = self.output_dir / f"{input_file.stem}.json"
+                solution_file = self.solution_dir / f"{input_file.stem}.json"
                 
                 # Check if output file was created
                 self.assertTrue(output_file.exists(), 

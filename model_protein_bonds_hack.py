@@ -516,7 +516,7 @@ def process_chain_bond(modified_json: Dict, bond: Tuple, is_intra_chain: bool,re
     modified_json["bondedAtomPairs"] = new_bonded_pairs
     return modified_json
 
-def process_json_files(source_dir: str, output_dir: str = "output/jsons/ubn_links_modified/") -> None:
+def process_json_files(source_dir: str, output_dir: str) -> None:
     """
     Process all JSON files in the source directory and create modified versions.
     
@@ -550,7 +550,7 @@ def process_json_files(source_dir: str, output_dir: str = "output/jsons/ubn_link
             modified_json = model_bond_with_ligand(modified_json, bond, residue_mapping)
         
         # Save modified JSON
-        output_path = Path(output_dir) / f"{filename}_modified.json"
+        output_path = Path(output_dir) / f"{filename}.json"
         with open(output_path, 'w') as f:
             json.dump(modified_json, f, indent=2)
         
@@ -567,13 +567,13 @@ def main():
         "--source-dir", 
         "-s", 
         default="test_files/input/",
-        help="Directory containing input JSON files (default: output/jsons/ubn_links/)"
+        help="Directory containing input JSON files (default: test_files/input/)"
     )
     parser.add_argument(
         "--output-dir", 
         "-o", 
         default="test_files/output/",
-        help="Directory to save modified JSON files (default: output/jsons/ubn_links_modified/)"
+        help="Directory to save modified JSON files (default: test_files/output/)"
     )
     parser.add_argument(
         "--verbose", 
