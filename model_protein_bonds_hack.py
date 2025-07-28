@@ -516,16 +516,20 @@ def process_chain_bond(modified_json: Dict, bond: Tuple, is_intra_chain: bool,re
     modified_json["bondedAtomPairs"] = new_bonded_pairs
     return modified_json
 
-def process_json_files(source_dir: str, output_dir: str) -> None:
+def process_json_files(source_dir: str, output_dir: str, residue_mapping_dir: str = None) -> None:
     """
     Process all JSON files in the source directory and create modified versions.
+    Optionally saves the final residue mapping for each file if residue_mapping_dir is specified.
     
     Args:
         source_dir: Directory containing original JSON files
         output_dir: Directory to save modified JSON files
+        residue_mapping_dir: Directory to save residue mapping JSON files (optional)
     """
     # Create output directory
     Path(output_dir).mkdir(parents=True, exist_ok=True)
+    if residue_mapping_dir:
+        Path(residue_mapping_dir).mkdir(parents=True, exist_ok=True)
     
     # Load all JSON files
     json_files = load_json_files(source_dir)
@@ -553,8 +557,13 @@ def process_json_files(source_dir: str, output_dir: str) -> None:
         output_path = Path(output_dir) / f"{filename}.json"
         with open(output_path, 'w') as f:
             json.dump(modified_json, f, indent=2)
-        
         print(f"Saved modified file: {output_path}")
+        # Save residue mapping if requested
+        if residue_mapping_dir:
+            mapping_path = Path(residue_mapping_dir) / f"{filename}_residue_mapping.json"
+            with open(mapping_path, 'w') as mf:
+                json.dump(residue_mapping, mf, indent=2)
+            print(f"Saved residue mapping: {mapping_path}")
 
 def main():
     """
@@ -576,6 +585,11 @@ def main():
         help="Directory to save modified JSON files (default: output/)"
     )
     parser.add_argument(
+        "--residue-mapping-dir",
+        default=None,
+        help="Directory to save residue mapping JSON files (optional)"
+    )
+    parser.add_argument(
         "--verbose", 
         "-v", 
         action="store_true",
@@ -587,6 +601,8 @@ def main():
     print("Starting protein bond modeling process...")
     print(f"Source directory: {args.source_dir}")
     print(f"Output directory: {args.output_dir}")
+    if args.residue_mapping_dir:
+        print(f"Residue mapping directory: {args.residue_mapping_dir}")
     
     if args.verbose:
         print("Verbose mode enabled")
@@ -597,7 +613,7 @@ def main():
         return 1
     
     # Process all JSON files
-    process_json_files(args.source_dir, args.output_dir)
+    process_json_files(args.source_dir, args.output_dir, args.residue_mapping_dir)
     print("Process completed successfully!")
     return 0
 
