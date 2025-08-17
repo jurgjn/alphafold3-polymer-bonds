@@ -244,8 +244,3 @@ def main():
     # Process all JSON files
     process_json_files(Path(args.source_dir), Path(args.output_dir), Path(args.mapping_dir))
     print("Process completed successfully!")
-    return 0
-
-if __name__ == "__main__":
-    exit_code = main()
-    exit(exit_code)
