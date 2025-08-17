@@ -30,6 +30,11 @@ from pathlib import Path
 from typing import Dict, List, Tuple, Any
 from copy import deepcopy
 
+import argparse, copy, itertools, json, string, sys, typing
+from pprint import pprint
+
+import pandas as pd
+
 def load_json_files(source_dir: str) -> Dict[str, Dict]:
     """
     Load all JSON files from the specified directory.
@@ -532,6 +537,47 @@ def process_chain_bond(modified_json: Dict, bond: Tuple, is_intra_chain: bool,re
     modified_json["bondedAtomPairs"] = new_bonded_pairs
     return modified_json
 
+def generate_residue_mapping(json_: typing.Dict[str, typing.Any]) -> pd.DataFrame:
+    columns_ = ['type', 'id', 'seq']
+    df_ = pd.DataFrame.from_records([(next(iter(seq.keys())), next(iter(seq.values()))['id'], next(iter(seq.values()))['sequence']) \
+        for seq in json_['sequences']], columns=columns_)
+    df_['seq'] = df_['seq'].map(list)
+    df_['pos'] = df_['seq'].map(lambda seq: range(1, len(seq) + 1))
+
+    df_ = df_.explode(['seq', 'pos']).set_index(['id', 'pos'])
+    columns_ = ['id1', 'pos1', 'atom1', 'id2', 'pos2', 'atom2']
+    bondedAtomPairs = pd.DataFrame.from_records([ 
+        (pair_[0][0], pair_[0][1], pair_[0][2], pair_[1][0], pair_[1][1], pair_[1][2]) for pair_ in json_['bondedAtomPairs']], columns=columns_)
+
+    df_['modified_type'] = df_['type']
+    for i, r in bondedAtomPairs.iterrows():
+        type1 = df_.loc[(r.id1, r.pos1), 'type']
+        type2 = df_.loc[(r.id2, r.pos2), 'type']
+        print(r.id1, r.pos1, r.id2, r.pos2, type1, type2)
+        if (type1 != 'ligand') and (type2 != 'ligand'):
+            df_.loc[(r.id2, r.pos2), 'modified_type'] = 'ligand'
+
+    df_['modified_seq'] = df_['seq']
+    for i, r in df_.iterrows():
+        if r.type != 'ligand' and r.modified_type == 'ligand':
+            df_.loc[i, 'modified_seq'] = poly_to_ligand[r.type][r.seq]
+
+    id_prefix = iter(string.ascii_uppercase)
+    df_['modified_id'] = ''
+    for (i1, r1), (i2, r2) in zip(df_.iterrows(), df_.iloc[1:].iterrows()):
+        if i1[0] != i2[0]: # new chain
+            id_prefix = iter(string.ascii_uppercase)
+            df_.loc[i2, 'modified_id'] = ''
+        elif i1[0] == i2[0] and r1.modified_type != r2.modified_type: # ligand transformation
+            df_.loc[i2, 'modified_id'] = next(id_prefix)
+        else: # walking along existing chain
+            df_.loc[i2, 'modified_id'] = df_.loc[i1, 'modified_id']            
+    df_['modified_id'] = df_.index.get_level_values('id') + df_['modified_id']
+    df_['modified_pos'] = df_.groupby(['modified_id', 'modified_type']).cumcount() + 1
+
+    cols_ = ['id', 'pos', 'type', 'seq', 'modified_id', 'modified_pos', 'modified_type', 'modified_seq']
+    return df_.reset_index()[cols_].set_index(['id', 'pos'])
+
 def process_json_files(source_dir: str, output_dir: str, residue_mapping_dir: str = None) -> None:
     """
     Process all JSON files in the source directory and create modified versions.
@@ -552,7 +598,12 @@ def process_json_files(source_dir: str, output_dir: str, residue_mapping_dir: st
     
     for filename, json_data in json_files.items():
         print(f"\nProcessing {filename}...")
-        
+        residue_mapping = generate_residue_mapping(json_data)
+
+        #with pd.option_context('display.max_rows', None, 'display.max_columns', None):
+        #    pprint(residue_mapping)
+
+        '''
         # Initialize residue mapping
         residue_mapping = initialize_residue_mapping(json_data)
         
@@ -574,11 +625,12 @@ def process_json_files(source_dir: str, output_dir: str, residue_mapping_dir: st
         with open(output_path, 'w') as f:
             json.dump(modified_json, f, indent=2)
         print(f"Saved modified file: {output_path}")
+        '''
+
         # Save residue mapping if requested
         if residue_mapping_dir:
             mapping_path = Path(residue_mapping_dir) / f"{filename}_residue_mapping.json"
-            with open(mapping_path, 'w') as mf:
-                json.dump(residue_mapping, mf, indent=2)
+            residue_mapping.to_csv(mapping_path, sep='\t')
             print(f"Saved residue mapping: {mapping_path}")
 
 def main():
