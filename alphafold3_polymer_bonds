@@ -255,14 +255,30 @@ def model_bond_with_ligand(json_data: Dict, bond: Tuple, residue_mapping: Dict) 
         print(f"Processing inter-chain bond: {chain1_id_orig} to {chain2_id_orig}")
     return process_chain_bond(modified_json, bond, is_intra_chain, residue_mapping, json_data)
 
-def get_amino_acid_ccd_map():
-    """Return the amino acid to CCD code mapping."""
-    return {
+poly_to_ligand = {
+    'protein': {
         'G': 'GLY', 'A': 'ALA', 'V': 'VAL', 'L': 'LEU', 'I': 'ILE',
         'P': 'PRO', 'F': 'PHE', 'Y': 'TYR', 'W': 'TRP', 'S': 'SER',
         'T': 'THR', 'C': 'CYS', 'M': 'MET', 'N': 'ASN', 'Q': 'GLN',
         'D': 'ASP', 'E': 'GLU', 'K': 'LYS', 'R': 'ARG', 'H': 'HIS'
-    }
+    },
+    'dna': {
+        'A': 'DA',
+        'G': 'DG',
+        'C': 'DC',
+        'T': 'DT',
+    },
+    'rna': {
+        'A': 'A',
+        'C': 'C',
+        'G': 'G',
+        'U': 'U',
+    },
+}
+
+def get_amino_acid_ccd_map():
+    """Return the amino acid to CCD code mapping."""
+    return poly_to_ligand
 
 def create_ligand_from_residue(chain_id: str, residue_char: str, ligand_suffix: str = "L") -> Dict:
     """
