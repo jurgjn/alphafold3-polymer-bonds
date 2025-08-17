@@ -546,8 +546,9 @@ def generate_residue_mapping(json_: typing.Dict[str, typing.Any]) -> pd.DataFram
 
     df_ = df_.explode(['seq', 'pos']).set_index(['id', 'pos'])
     columns_ = ['id1', 'pos1', 'atom1', 'id2', 'pos2', 'atom2']
+    bondedAtomPairs_ = json_['bondedAtomPairs'] if 'bondedAtomPairs' in json_ else []
     bondedAtomPairs = pd.DataFrame.from_records([ 
-        (pair_[0][0], pair_[0][1], pair_[0][2], pair_[1][0], pair_[1][1], pair_[1][2]) for pair_ in json_['bondedAtomPairs']], columns=columns_)
+        (pair_[0][0], pair_[0][1], pair_[0][2], pair_[1][0], pair_[1][1], pair_[1][2]) for pair_ in bondedAtomPairs_], columns=columns_)
 
     df_['modified_type'] = df_['type']
     for i, r in bondedAtomPairs.iterrows():
@@ -578,6 +579,58 @@ def generate_residue_mapping(json_: typing.Dict[str, typing.Any]) -> pd.DataFram
     cols_ = ['id', 'pos', 'type', 'seq', 'modified_id', 'modified_pos', 'modified_type', 'modified_seq']
     return df_.reset_index()[cols_].set_index(['id', 'pos'])
 
+def generate_modified_json(json_, mapping):
+    modified_json = copy.deepcopy(json_)
+    # TODO - ordering does not match what's in original file (can infer from json_)
+    sequences = mapping.groupby('modified_id').agg(
+        modified_type=('modified_type', lambda x: x.iloc[0]),
+        modified_seq=('modified_seq', lambda x: ''.join(x)),
+    ).reset_index()
+
+    modified_json['sequences'] = []
+    for i, r in sequences.iterrows():
+        if r.modified_type == 'ligand':
+            modified_json['sequences'].append({
+                'ligand': {
+                    'id': r.modified_id,
+                    'ccdCodes': r.modified_seq,
+            }})
+        else:
+            modified_json['sequences'].append({
+            r.modified_type: {
+                'id': r.modified_id,
+                'sequence': r.modified_seq,
+            }})
+
+    modified_json['bondedAtomPairs'] = []
+    bondedAtomPairs_ = json_['bondedAtomPairs'] if 'bondedAtomPairs' in json_ else []
+    for ((id1, pos1, atom1), (id2, pos2, atom2)) in bondedAtomPairs_:
+        # Add preceding protein backbone bond 
+        if mapping.loc[(id2, pos2), 'type'] == 'protein' and mapping.loc[(id2, pos2), 'modified_type'] == 'ligand':
+            modified_json['bondedAtomPairs'].append([
+                (mapping.loc[(id2, pos2 - 1), 'modified_id'], int(mapping.loc[(id2, pos2 - 1), 'modified_pos']), 'C'),
+                (mapping.loc[(id2, pos2), 'modified_id'], int(mapping.loc[(id2, pos2), 'modified_pos']), 'N'),
+            ])
+
+        # Update all coordinates to new mapping
+        modified_json['bondedAtomPairs'].append([
+            (mapping.loc[(id1, pos1), 'modified_id'], int(mapping.loc[(id1, pos1), 'modified_pos']), atom1),
+            (mapping.loc[(id2, pos2), 'modified_id'], int(mapping.loc[(id2, pos2), 'modified_pos']), atom2),
+        ])
+
+        # Add succeeding protein backbone bond
+        if mapping.loc[(id2, pos2), 'type'] == 'protein' and mapping.loc[(id2, pos2), 'modified_type'] == 'ligand':
+            modified_json['bondedAtomPairs'].append([
+                (mapping.loc[(id2, pos2), 'modified_id'], int(mapping.loc[(id2, pos2), 'modified_pos']), 'C'),
+                (mapping.loc[(id2, pos2 + 1), 'modified_id'], int(mapping.loc[(id2, pos2 + 1), 'modified_pos']), 'N'),
+            ])
+
+    #with pd.option_context('display.max_rows', None, 'display.max_columns', None):
+    #    print(sequences)
+    #sequences.to_csv('_test_sequences.tsv', sep='\t')
+    #print(json.dumps(modified_json, indent=2))
+    return modified_json
+
 def process_json_files(source_dir: str, output_dir: str, residue_mapping_dir: str = None) -> None:
     """
     Process all JSON files in the source directory and create modified versions.
@@ -598,34 +651,20 @@ def process_json_files(source_dir: str, output_dir: str, residue_mapping_dir: st
     
     for filename, json_data in json_files.items():
         print(f"\nProcessing {filename}...")
-        residue_mapping = generate_residue_mapping(json_data)
 
+        # Generate mapping
+        residue_mapping = generate_residue_mapping(json_data)
         #with pd.option_context('display.max_rows', None, 'display.max_columns', None):
         #    pprint(residue_mapping)
 
-        '''
-        # Initialize residue mapping
-        residue_mapping = initialize_residue_mapping(json_data)
-        
-        # Find protein-protein bonds
-        protein_bonds = find_protein_protein_bonds(json_data)
-        
-        if not protein_bonds:
-            print(f"No protein-protein bonds found in {filename}")
-            continue
-        
-        # Process each protein-protein bond
-        modified_json = json_data
-        for i, bond in enumerate(protein_bonds, 1):
-            print(f"Modifying bond {i}/{len(protein_bonds)}: {bond}")
-            modified_json = model_bond_with_ligand(modified_json, bond, residue_mapping)
-        
+        # Use mapping to generate modified json
+        modified_json = generate_modified_json(json_data, residue_mapping)
+
         # Save modified JSON
         output_path = Path(output_dir) / f"{filename}.json"
         with open(output_path, 'w') as f:
             json.dump(modified_json, f, indent=2)
         print(f"Saved modified file: {output_path}")
-        '''
 
         # Save residue mapping if requested
         if residue_mapping_dir:
