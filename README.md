@@ -1,6 +1,14 @@
-# AF3 Protein-Protein Bond Modeling Tool
+# Polymer bonds in AlphaFold3
 
-A Python tool for modeling protein-protein bonds in AlphaFold3 structures using ligand bridges. This tool processes JSON files containing protein structure data and converts direct protein-protein bonds into chemically realistic ligand-mediated connections.
+AlphaFold3
+[does not allow](https://github.com/google-deepmind/alphafold3/blob/main/docs/input.md#bonds)
+covalent bonds between/within polymer chains (protein, DNA, RNA).
+We work around this limitation by treating one of the corresponding residue or nucleic acid as a ligand. Specifically, we split up the polymer sequence, add the corresponding residue/nucleic acid an extra ligand, and manually specify the peptide/phosphate backbone covalent bonds.
+
+This is experimental/work-in-progress, please also have a look at complementary approaches
+[KosinskiLab/af3x](https://github.com/KosinskiLab/af3x)
+and
+[bio-phys/polyUb-AF](https://github.com/bio-phys/polyUb-AF).
 
 ## Overview
 
@@ -129,3 +137,36 @@ python tests.py
 ```
 
 Tests compare generated output files with reference solutions in `test_files/solution/`.
+
+## Residue/nucleotide atom names
+All residues and nucleotides are in the CCD, tables below give links to residues/nucleotides in [PDBeChem](https://www.ebi.ac.uk/msd-srv/msdchem/cgi-bin/cgi.pl). This is useful to look up atom names that can then be used to specify covalent bonds in `BondedAtomPairs`.
+
+| Residue       | Character | Ligand |
+| ------------- | --------- | ------ |
+| alanine       | A         | [ALA](https://www.ebi.ac.uk/pdbe-srv/pdbechem/chemicalCompound/show/ALA) |
+| arginine      | R         | [ARG](https://www.ebi.ac.uk/pdbe-srv/pdbechem/chemicalCompound/show/ARG) |
+| asparagine    | N         | [ASN](https://www.ebi.ac.uk/pdbe-srv/pdbechem/chemicalCompound/show/ASN) |
+| aspartic acid | D         | [ASP](https://www.ebi.ac.uk/pdbe-srv/pdbechem/chemicalCompound/show/ASP) |
+| cysteine      | C         | [CYS](https://www.ebi.ac.uk/pdbe-srv/pdbechem/chemicalCompound/show/CYS) |
+| glutamine     | Q         | [GLN](https://www.ebi.ac.uk/pdbe-srv/pdbechem/chemicalCompound/show/GLN) |
+| glutamic acid | E         | [GLU](https://www.ebi.ac.uk/pdbe-srv/pdbechem/chemicalCompound/show/GLU) |
+| glycine       | G         | [GLY](https://www.ebi.ac.uk/pdbe-srv/pdbechem/chemicalCompound/show/GLY) |
+| histidine     | H         | [HIS](https://www.ebi.ac.uk/pdbe-srv/pdbechem/chemicalCompound/show/HIS) |
+| isoleucine    | I         | [ILE](https://www.ebi.ac.uk/pdbe-srv/pdbechem/chemicalCompound/show/ILE) |
+| leucine       | L         | [LEU](https://www.ebi.ac.uk/pdbe-srv/pdbechem/chemicalCompound/show/LEU) |
+| lysine        | K         | [LYS](https://www.ebi.ac.uk/pdbe-srv/pdbechem/chemicalCompound/show/LYS) |
+| methionine    | M         | [MET](https://www.ebi.ac.uk/pdbe-srv/pdbechem/chemicalCompound/show/MET) |
+| phenylalanine | F         | [PHE](https://www.ebi.ac.uk/pdbe-srv/pdbechem/chemicalCompound/show/PHE) |
+| proline       | P         | [PRO](https://www.ebi.ac.uk/pdbe-srv/pdbechem/chemicalCompound/show/PRO) |
+| serine        | S         | [SER](https://www.ebi.ac.uk/pdbe-srv/pdbechem/chemicalCompound/show/SER) |
+| threonine     | T         | [THR](https://www.ebi.ac.uk/pdbe-srv/pdbechem/chemicalCompound/show/THR) |
+| tryptophan    | W         | [TRP](https://www.ebi.ac.uk/pdbe-srv/pdbechem/chemicalCompound/show/TRP) |
+| tyrosine      | Y         | [TYR](https://www.ebi.ac.uk/pdbe-srv/pdbechem/chemicalCompound/show/TYR) |
+| valine        | V         | [VAL](https://www.ebi.ac.uk/pdbe-srv/pdbechem/chemicalCompound/show/VAL) |
+
+| Nucleotide      | Character | DNA ligand | RNA ligand |
+| --------------- | --------- | ---------- | ---------- |
+| adenine         | A         | [DA](https://www.ebi.ac.uk/pdbe-srv/pdbechem/chemicalCompound/show/DA) | [A](https://www.ebi.ac.uk/pdbe-srv/pdbechem/chemicalCompound/show/A) |
+| guanine         | G         | [DG](https://www.ebi.ac.uk/pdbe-srv/pdbechem/chemicalCompound/show/DG) | [C](https://www.ebi.ac.uk/pdbe-srv/pdbechem/chemicalCompound/show/C) |
+| cytosine        | C         | [DC](https://www.ebi.ac.uk/pdbe-srv/pdbechem/chemicalCompound/show/DC) | [G](https://www.ebi.ac.uk/pdbe-srv/pdbechem/chemicalCompound/show/G) |
+| thymine/uracil  | T/U       | [DT](https://www.ebi.ac.uk/pdbe-srv/pdbechem/chemicalCompound/show/DT) | [U](https://www.ebi.ac.uk/pdbe-srv/pdbechem/chemicalCompound/show/U) |
