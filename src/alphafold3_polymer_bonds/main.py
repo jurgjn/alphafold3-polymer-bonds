@@ -54,6 +54,12 @@ poly_to_ligand = {
     },
 }
 
+backbone_atoms = {
+    'protein': ('C', 'N'),
+    'dna': ("C3'", "OP3"),
+    'rna': ("C3'", "OP3"),
+}
+
 def generate_residue_mapping(json_data: JSON) -> DataFrame:
     """
     Generate mapping from input .json with polymer bonds by modelling the second entity in bondedAtomPairs as a ligand.
@@ -75,9 +81,9 @@ def generate_residue_mapping(json_data: JSON) -> DataFrame:
 
     df_ = df_.explode(['seq', 'pos']).set_index(['id', 'pos'])
     columns_ = ['id1', 'pos1', 'atom1', 'id2', 'pos2', 'atom2']
-    bondedAtomPairs_ = json_data['bondedAtomPairs'] if 'bondedAtomPairs' in json_data else []
+    bondedAtomPairs_iter = json_data.get('bondedAtomPairs', [])
     bondedAtomPairs = DataFrame.from_records([ 
-        (pair_[0][0], pair_[0][1], pair_[0][2], pair_[1][0], pair_[1][1], pair_[1][2]) for pair_ in bondedAtomPairs_], columns=columns_)
+        (pair_[0][0], pair_[0][1], pair_[0][2], pair_[1][0], pair_[1][1], pair_[1][2]) for pair_ in bondedAtomPairs_iter], columns=columns_)
 
     df_['modified_type'] = df_['type']
     for i, r in bondedAtomPairs.iterrows():
@@ -135,27 +141,30 @@ def generate_modified_json(json_data: JSON, mapping: DataFrame) -> JSON:
                 'sequence': r.modified_seq,
             }})
 
+    def get_(id, pos, col):
+        return mapping.loc[(id, pos), col]
+
     modified_json['bondedAtomPairs'] = []
-    bondedAtomPairs_ = json_data['bondedAtomPairs'] if 'bondedAtomPairs' in json_data else []
-    for ((id1, pos1, atom1), (id2, pos2, atom2)) in bondedAtomPairs_:
-        # Add preceding protein backbone bond 
-        if mapping.loc[(id2, pos2), 'type'] == 'protein' and mapping.loc[(id2, pos2), 'modified_type'] == 'ligand':
+    for ((id1, pos1, atom1), (id2, pos2, atom2)) in json_data.get('bondedAtomPairs', []):
+        type2, modified_type2 = get_(id2, pos2, 'type'), get_(id2, pos2, 'modified_type')
+        # If preceding entity exists, add backbone bond
+        if (id2, pos2 - 1) in mapping.index and type2 != 'ligand' and modified_type2 == 'ligand':
             modified_json['bondedAtomPairs'].append([
-                (mapping.loc[(id2, pos2 - 1), 'modified_id'], int(mapping.loc[(id2, pos2 - 1), 'modified_pos']), 'C'),
-                (mapping.loc[(id2, pos2), 'modified_id'], int(mapping.loc[(id2, pos2), 'modified_pos']), 'N'),
+                (get_(id2, pos2 - 1, 'modified_id'), int(get_(id2, pos2 - 1, 'modified_pos')), backbone_atoms[type2][0]),
+                (get_(id2, pos2,     'modified_id'), int(get_(id2, pos2,     'modified_pos')), backbone_atoms[type2][1]),
             ])
 
-        # Update all coordinates to new mapping
+        # User-specified bond with mapped coordinates 
         modified_json['bondedAtomPairs'].append([
-            (mapping.loc[(id1, pos1), 'modified_id'], int(mapping.loc[(id1, pos1), 'modified_pos']), atom1),
-            (mapping.loc[(id2, pos2), 'modified_id'], int(mapping.loc[(id2, pos2), 'modified_pos']), atom2),
+            (get_(id1, pos1, 'modified_id'), int(get_(id1, pos1, 'modified_pos')), atom1),
+            (get_(id2, pos2, 'modified_id'), int(get_(id2, pos2, 'modified_pos')), atom2),
         ])
 
-        # Add succeeding protein backbone bond
-        if mapping.loc[(id2, pos2), 'type'] == 'protein' and mapping.loc[(id2, pos2), 'modified_type'] == 'ligand':
+        # If succeeding residue exists, add backbone bond
+        if (id2, pos2 + 1) in mapping.index  and type2 != 'ligand' and modified_type2 == 'ligand':
             modified_json['bondedAtomPairs'].append([
-                (mapping.loc[(id2, pos2), 'modified_id'], int(mapping.loc[(id2, pos2), 'modified_pos']), 'C'),
-                (mapping.loc[(id2, pos2 + 1), 'modified_id'], int(mapping.loc[(id2, pos2 + 1), 'modified_pos']), 'N'),
+                (get_(id2, pos2,     'modified_id'), int(get_(id2, pos2,     'modified_pos')), backbone_atoms[type2][0]),
+                (get_(id2, pos2 + 1, 'modified_id'), int(get_(id2, pos2 + 1, 'modified_pos')), backbone_atoms[type2][1]),
             ])
 
     return modified_json
