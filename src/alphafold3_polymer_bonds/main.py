@@ -22,7 +22,7 @@ Usage:
 Authors: Ricardo Heinzmann, Jürgen Jänes
 """
 
-import argparse, json, string, sys
+import argparse, gzip, json, string, sys
 
 from copy import deepcopy
 from pathlib import Path
@@ -31,7 +31,9 @@ from pprint import pprint
 from typing import Dict, List, Tuple, Any, TypeAlias
 JSON: TypeAlias = dict[str, "JSON"] | list["JSON"] | str | int | float | bool | None #https://github.com/python/typing/issues/182#issuecomment-1320974824
 
-from pandas import DataFrame, option_context as pd_option_context
+import pandas as pd
+
+import Bio.PDB, Bio.PDB.mmcifio 
 
 poly_to_ligand = {
     'protein': {
@@ -60,7 +62,7 @@ backbone_atoms = {
     'rna': ("C3'", "OP3"),
 }
 
-def generate_residue_mapping(json_data: JSON) -> DataFrame:
+def generate_residue_mapping(json_data: JSON) -> pd.DataFrame:
     """
     Generate mapping from input .json with polymer bonds by modelling the second entity in bondedAtomPairs as a ligand.
 
@@ -74,7 +76,7 @@ def generate_residue_mapping(json_data: JSON) -> DataFrame:
         - type, modified_type
     """
     columns_ = ['type', 'id', 'seq']
-    df_ = DataFrame.from_records([(next(iter(seq.keys())), next(iter(seq.values()))['id'], next(iter(seq.values()))['sequence']) \
+    df_ = pd.DataFrame.from_records([(next(iter(seq.keys())), next(iter(seq.values()))['id'], next(iter(seq.values()))['sequence']) \
         for seq in json_data['sequences']], columns=columns_)
     df_['seq'] = df_['seq'].map(list)
     df_['pos'] = df_['seq'].map(lambda seq: range(1, len(seq) + 1))
@@ -82,7 +84,7 @@ def generate_residue_mapping(json_data: JSON) -> DataFrame:
     df_ = df_.explode(['seq', 'pos']).set_index(['id', 'pos'])
     columns_ = ['id1', 'pos1', 'atom1', 'id2', 'pos2', 'atom2']
     bondedAtomPairs_iter = json_data.get('bondedAtomPairs', [])
-    bondedAtomPairs = DataFrame.from_records([ 
+    bondedAtomPairs = pd.DataFrame.from_records([ 
         (pair_[0][0], pair_[0][1], pair_[0][2], pair_[1][0], pair_[1][1], pair_[1][2]) for pair_ in bondedAtomPairs_iter], columns=columns_)
 
     df_['modified_type'] = df_['type']
@@ -114,7 +116,7 @@ def generate_residue_mapping(json_data: JSON) -> DataFrame:
     cols_ = ['id', 'pos', 'type', 'seq', 'modified_id', 'modified_pos', 'modified_type', 'modified_seq']
     return df_.reset_index()[cols_].set_index(['id', 'pos'])
 
-def generate_modified_json(json_data: JSON, mapping: DataFrame) -> JSON:
+def generate_modified_json(json_data: JSON, mapping: pd.DataFrame) -> JSON:
     """
     Modify json_data based on the specified residue mapping
     """
@@ -160,8 +162,8 @@ def generate_modified_json(json_data: JSON, mapping: DataFrame) -> JSON:
             (get_(id2, pos2, 'modified_id'), int(get_(id2, pos2, 'modified_pos')), atom2),
         ])
 
-        # If succeeding residue exists, add backbone bond
-        if (id2, pos2 + 1) in mapping.index  and type2 != 'ligand' and modified_type2 == 'ligand':
+        # If succeeding entity exists, add backbone bond
+        if (id2, pos2 + 1) in mapping.index and type2 != 'ligand' and modified_type2 == 'ligand':
             modified_json['bondedAtomPairs'].append([
                 (get_(id2, pos2,     'modified_id'), int(get_(id2, pos2,     'modified_pos')), backbone_atoms[type2][0]),
                 (get_(id2, pos2 + 1, 'modified_id'), int(get_(id2, pos2 + 1, 'modified_pos')), backbone_atoms[type2][1]),
@@ -169,7 +171,47 @@ def generate_modified_json(json_data: JSON, mapping: DataFrame) -> JSON:
 
     return modified_json
 
-def process_json_files(source_path: Path, output_path: Path, mapping_path: Path = None) -> None:
+def post_process_structure(model_path: Path, corrected_model_path: Path, mapping: pd.DataFrame):
+    parser = Bio.PDB.MMCIFParser()
+    with gzip.open(model_path, 'rt') as fh:
+        struct = parser.get_structure(model_path.name, fh)
+
+    residues = Bio.PDB.Selection.unfold_entities(entity_list=struct[0], target_level='R')
+    for resid in residues:
+        chain, chain_id = resid.get_parent(), resid.get_parent().get_id()
+        hetflag, resseq, icode = resid.get_id()
+
+        corrected_id = mapping.loc[(chain_id, resseq), 'id']
+        corrected_pos = mapping.loc[(chain_id, resseq), 'pos']
+
+        #print(resid, chain, chain_id, '!', hetflag, '!', resseq, icode, corrected_id, corrected_pos)
+
+        # Detach residue from modified chain
+        chain.detach_child(resid.get_id())
+
+        # Seems that can change resseq by re-writing id tuple as a whole..
+        # Set hetflag to a single space for an ATOM record
+        resid.id = (' ', int(corrected_pos), icode)
+
+        # Add residue to original chain
+        struct[0][corrected_id].add(resid)
+
+    # Generate list of emtpy chains in struct
+    empty_chain_id = []
+    for chain in Bio.PDB.Selection.unfold_entities(entity_list=struct[0], target_level='C'):
+        if len(list(chain.get_residues())) == 0:
+            empty_chain_id.append(chain.id)
+
+    # Remove empty chains from struct
+    for chain_id in empty_chain_id:
+        struct[0].detach_child(chain_id)
+
+    #io = Bio.PDB.PDBIO()
+    io = Bio.PDB.MMCIFIO()
+    io.set_structure(struct)
+    io.save(str(corrected_model_path))
+
+def process_json_files(source_path: Path, output_path: Path, mapping_path: Path = None, predict_path: Path = None) -> None:
     """
     Process all JSON files in the source directory and create modified versions.
     Optionally saves the final residue mapping for each file if residue_mapping_dir is specified.
@@ -186,31 +228,40 @@ def process_json_files(source_path: Path, output_path: Path, mapping_path: Path 
 
     # Process files
     for json_path in source_path.glob('*.json'):
-        try:
-            with open(json_path, 'r') as fh:
-                json_data = json.load(fh)
-            print(f"Loaded: {json_path.name}")
-        except Exception as e:
-            print(f"Error loading {json_path.name}: {e}")
-
-        # Generate mapping
-        print(f"Processing {json_path.name}...")
-        residue_mapping = generate_residue_mapping(json_data)
-
-        # Use mapping to generate modified json and write to file
-        modified_json = generate_modified_json(json_data, residue_mapping)
         modified_json_path = output_path / json_path.name
-        with open(modified_json_path, 'w') as f:
-            json.dump(modified_json, f, indent=2)
-        print(f"Saved modified file: {modified_json_path}")
+        tsv_mapping_path = mapping_path / json_path.with_suffix('.tsv').name
+        cif_path = predict_path / json_path.stem / f'{json_path.stem}_model.cif.gz'
+        mod_path = predict_path / json_path.stem / f'{json_path.stem}_model_corrected.cif'
 
-        # Write mapping
-        if mapping_path:
-            tsv_mapping_path = mapping_path / json_path.with_suffix('.tsv').name
-            print(json_path.with_suffix('.tsv').name)
-            print(tsv_mapping_path)
+        if not modified_json_path.is_file():
+            try:
+                with open(json_path, 'r') as fh:
+                    json_data = json.load(fh)
+                print(f"Loaded: {json_path.name}")
+            except Exception as e:
+                print(f"Error loading {json_path.name}: {e}")
+
+            # Generate mapping
+            print(f"Processing {json_path.name}...")
+            residue_mapping = generate_residue_mapping(json_data)
+
+            # Use mapping to generate modified json and write to file
+            modified_json = generate_modified_json(json_data, residue_mapping)
+            with open(modified_json_path, 'w') as f:
+                json.dump(modified_json, f, indent=2)
+            print(f"Saved modified file: {modified_json_path}")
+
+            # Write mapping
             residue_mapping.to_csv(tsv_mapping_path, sep='\t')
             print(f"Saved residue mapping: {tsv_mapping_path}")
+
+        elif cif_path.is_file() and not mod_path.is_file():
+            print(f"Post-processing structure:", cif_path)
+            residue_mapping = pd.read_csv(tsv_mapping_path, sep='\t').set_index(['modified_id', 'modified_pos'])
+            with open(modified_json_path, 'r') as fh:
+                modified_json = json.load(fh)
+            post_process_structure(cif_path, mod_path, residue_mapping)
+            print(f"Wrote output to:", mod_path)
 
 def main():
     """
@@ -236,14 +287,20 @@ def main():
         default=None,
         help="Directory to save residue mapping JSON files (optional)"
     )
+    parser.add_argument(
+        "--predict_dir",
+        default=None,
+        help="Directory of AlphaFold3 predictions (optional)"
+    )
     
     args = parser.parse_args()
-    
     print("Starting protein bond modeling process...")
     print(f"Source directory: {args.source_dir}")
     print(f"Output directory: {args.output_dir}")
     if args.mapping_dir:
         print(f"Residue mapping directory: {args.mapping_dir}")
+    if args.predict_dir:
+        print(f"AlphaFold3 predictions directory: {args.predict_dir}")
     
     # Check if source directory exists
     if not Path(args.source_dir).exists():
@@ -251,5 +308,5 @@ def main():
         return 1
     
     # Process all JSON files
-    process_json_files(Path(args.source_dir), Path(args.output_dir), Path(args.mapping_dir))
+    process_json_files(Path(args.source_dir), Path(args.output_dir), Path(args.mapping_dir), Path(args.predict_dir))
     print("Process completed successfully!")
