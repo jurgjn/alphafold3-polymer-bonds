@@ -22,7 +22,7 @@ Usage:
 Authors: Ricardo Heinzmann, Jürgen Jänes
 """
 
-import argparse, gzip, json, string, sys
+import argparse, gzip, importlib, importlib.metadata, json, string, sys
 
 from copy import deepcopy
 from pathlib import Path
@@ -58,8 +58,8 @@ poly_to_ligand = {
 
 backbone_atoms = {
     'protein': ('C', 'N'),
-    'dna': ("C3'", "OP3"),
-    'rna': ("C3'", "OP3"),
+    'dna': ("C3'", 'OP3'),
+    'rna': ("C3'", 'OP3'),
 }
 
 def generate_residue_mapping(json_data: JSON) -> pd.DataFrame:
@@ -294,7 +294,7 @@ def main():
     )
     
     args = parser.parse_args()
-    print("Starting protein bond modeling process...")
+    print(f"alphafold3-polymer-bonds v{importlib.metadata.version('alphafold3-polymer-bonds')}")
     print(f"Source directory: {args.source_dir}")
     print(f"Output directory: {args.output_dir}")
     if args.mapping_dir:

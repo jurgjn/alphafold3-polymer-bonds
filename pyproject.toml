@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling>=1.26"]
+requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
@@ -12,7 +12,7 @@ description = "Support for covalent bonds between/within polymer chains (protein
 readme = "README.md"
 requires-python = ">=3.9"
 classifiers = [
-  "Development Status :: 3 - Alpha",
+  "Development Status :: 2 - Pre-Alpha",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3",
 ]
@@ -29,3 +29,12 @@ alphafold3_polymer_bonds = "alphafold3_polymer_bonds.main:main"
 [project.urls]
 Homepage = "https://github.com/jurgjn/alphafold3-polymer-bonds"
 Issues = "https://github.com/jurgjn/alphafold3-polymer-bonds/issues"
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+  "/examples",
+  "/test_files",
+  "example_usage.ipynb",
+  "reconstruct.ipynb",
+  "tests.py"
+]
