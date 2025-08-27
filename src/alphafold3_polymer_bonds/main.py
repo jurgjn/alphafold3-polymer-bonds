@@ -244,8 +244,8 @@ def process_json_files(source_path: Path, output_path: Path, mapping_path: Path 
     """
     # Create output directory
     output_path.mkdir(parents=True, exist_ok=True)
-    if mapping_path:
-        mapping_path.mkdir(parents=True, exist_ok=True)
+    #if mapping_path:
+    #    mapping_path.mkdir(parents=True, exist_ok=True)
 
     # Process files
     for json_path in source_path.glob('*.json'):
@@ -296,42 +296,57 @@ def main():
         description="Model protein-protein bonds using ligand bridges in AlphaFold3 JSON files"
     )
     parser.add_argument(
-        "--source_dir", 
+        "--source_path", 
         "-s", 
         default="input/",
         help="Directory containing input JSON files (default: input/)"
     )
     parser.add_argument(
-        "--output_dir", 
+        "--output_path", 
         "-o", 
         default="output/",
         help="Directory to save modified JSON files (default: output/)"
     )
-    parser.add_argument(
-        "--mapping_dir",
-        default=None,
-        help="Directory to save residue mapping JSON files (optional)"
-    )
-    parser.add_argument(
-        "--predict_dir",
-        default=None,
-        help="Directory of AlphaFold3 predictions (optional)"
-    )
+    #parser.add_argument(
+    #    "--mapping_dir",
+    #    default=None,
+    #    help="Directory to save residue mapping JSON files (optional)"
+    #)
+    #parser.add_argument(
+    #    "--predict_dir",
+    #    default=None,
+    #    help="Directory of AlphaFold3 predictions (optional)"
+    #)
     
     args = parser.parse_args()
     print(f"alphafold3-polymer-bonds v{importlib.metadata.version('alphafold3-polymer-bonds')}")
-    print(f"Source directory: {args.source_dir}")
-    print(f"Output directory: {args.output_dir}")
-    if args.mapping_dir:
-        print(f"Residue mapping directory: {args.mapping_dir}")
-    if args.predict_dir:
-        print(f"AlphaFold3 predictions directory: {args.predict_dir}")
+    print(f"Source file: {args.source_path}")
+    print(f"Output file: {args.output_path}")
+
+    with open(args.source_path, 'r') as fh:
+        json_data = json.load(fh)
+        print(f"Loaded: {args.source_path}")
+
+    # Generate mapping
+    #print(f"Processing {json_path.name}...")
+    residue_mapping = generate_residue_mapping(json_data)
+
+    # Use mapping to generate modified json and write to file
+    modified_json = generate_modified_json(json_data, residue_mapping)
+    with open(args.output_path, 'w') as f:
+        json.dump(modified_json, f, indent=2)
+    print(f"Saved modified file: {args.output_path}")
+
+    #if args.mapping_dir:
+    #    print(f"Residue mapping directory: {args.mapping_dir}")
+    #if args.predict_dir:
+    #    print(f"AlphaFold3 predictions directory: {args.predict_dir}")
     
     # Check if source directory exists
-    if not Path(args.source_dir).exists():
-        print(f"Error: Source directory '{args.source_dir}' does not exist!")
-        return 1
+    #if not Path(args.source_dir).exists():
+    #    print(f"Error: Source directory '{args.source_dir}' does not exist!")
+    #    return 1
     
     # Process all JSON files
-    process_json_files(Path(args.source_dir), Path(args.output_dir), Path(args.mapping_dir), Path(args.predict_dir))
-    print("Process completed successfully!")
+    #process_json_files(Path(args.source_dir), Path(args.output_dir), Path(args.mapping_dir), Path(args.predict_dir))
+    #print("Process completed successfully!")
