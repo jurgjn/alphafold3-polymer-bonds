@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "alphafold3-polymer-bonds"
-version = "0.1-dev"
+version = "0.1"
 authors = [
   { name="jurgjn", email="jurgjn@users.noreply.github.com" },
 ]
