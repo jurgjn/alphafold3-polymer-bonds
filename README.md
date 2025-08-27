@@ -12,7 +12,6 @@ and
 
 ## Quick start
 ```bash
-git clone git@github.com:jurgjn/alphafold3-polymer-bonds.git
-cd alphafold3-polymer-bonds
-pip install -e .
+pip install alphafold3-polymer-bonds
+alphafold3_polymer_bonds --help
 ```

@@ -18,6 +18,16 @@
 [residues](https://github.com/google-deepmind/alphafold/tree/main/server#protein-chains),
 [DNA](https://github.com/google-deepmind/alphafold/tree/main/server#dna-chains),
 [RNA](https://github.com/google-deepmind/alphafold/tree/main/server#rna-chains)
+- Install development version:
+    ```
+    git clone git@github.com:jurgjn/alphafold3-polymer-bonds.git
+    cd alphafold3-polymer-bonds
+    pip install -e .
+    ```
+- Uninstall development version:
+    ```
+    pip uninstall alphafold3-polymer-bonds
+    ```
 
 ## Residue/nucleotide atom names
 All residues and nucleotides are in the CCD, tables below give links to residues/nucleotides in [PDBeChem](https://www.ebi.ac.uk/msd-srv/msdchem/cgi-bin/cgi.pl). This is useful to look up atom names that can then be used to specify covalent bonds in `BondedAtomPairs`.

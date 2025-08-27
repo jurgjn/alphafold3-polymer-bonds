@@ -4,15 +4,16 @@ build-backend = "hatchling.build"
 
 [project]
 name = "alphafold3-polymer-bonds"
-version = "0.1"
+version = "0.2-dev"
 authors = [
   { name="jurgjn", email="jurgjn@users.noreply.github.com" },
 ]
 description = "Support for covalent bonds between/within polymer chains (protein, DNA, RNA) in AlphaFold3"
 readme = "README.md"
 requires-python = ">=3.9"
+# https://pypi.org/classifiers/
 classifiers = [
-  "Development Status :: 2 - Pre-Alpha",
+  "Development Status :: 3 - Alpha",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3",
 ]
@@ -32,7 +33,7 @@ Issues = "https://github.com/jurgjn/alphafold3-polymer-bonds/issues"
 
 [tool.hatch.build.targets.sdist]
 exclude = [
-  "/examples",
+  "/examples_colab",
   "/test_files",
   "example_usage.ipynb",
   "reconstruct.ipynb",
