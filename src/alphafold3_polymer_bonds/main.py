@@ -88,11 +88,14 @@ def generate_residue_mapping(json_data: JSON) -> pd.DataFrame:
         (pair_[0][0], pair_[0][1], pair_[0][2], pair_[1][0], pair_[1][1], pair_[1][2]) for pair_ in bondedAtomPairs_iter], columns=columns_)
 
     df_['modified_type'] = df_['type']
+    df_['modified_ptm'] = False
     for i, r in bondedAtomPairs.iterrows():
         type1 = df_.loc[(r.id1, r.pos1), 'type']
         type2 = df_.loc[(r.id2, r.pos2), 'type']
         print(r.id1, r.pos1, r.id2, r.pos2, type1, type2)
-        if (type1 != 'ligand') and (type2 != 'ligand'):
+        if (type1 != 'ligand') and (type2 == 'protein'):
+            df_.loc[(r.id2, r.pos2), 'modified_ptm'] = True
+        elif (type1 != 'ligand') and (type2 != 'ligand'):
             df_.loc[(r.id2, r.pos2), 'modified_type'] = 'ligand'
 
     df_['modified_seq'] = df_['seq']
@@ -106,14 +109,14 @@ def generate_residue_mapping(json_data: JSON) -> pd.DataFrame:
         if i1[0] != i2[0]: # new chain
             id_prefix = iter(string.ascii_uppercase)
             df_.loc[i2, 'modified_id'] = ''
-        elif i1[0] == i2[0] and r1.modified_type != r2.modified_type: # ligand transformation
+        elif i1[0] == i2[0] and r1.modified_type != r2.modified_type and r2.modified_type == 'ligand': # ligand transformation
             df_.loc[i2, 'modified_id'] = next(id_prefix)
         else: # walking along existing chain
             df_.loc[i2, 'modified_id'] = df_.loc[i1, 'modified_id']            
     df_['modified_id'] = df_.index.get_level_values('id') + df_['modified_id']
     df_['modified_pos'] = df_.groupby(['modified_id', 'modified_type']).cumcount() + 1
 
-    cols_ = ['id', 'pos', 'type', 'seq', 'modified_id', 'modified_pos', 'modified_type', 'modified_seq']
+    cols_ = ['id', 'pos', 'type', 'seq', 'modified_id', 'modified_pos', 'modified_type', 'modified_ptm', 'modified_seq']
     return df_.reset_index()[cols_].set_index(['id', 'pos'])
 
 def generate_modified_json(json_data: JSON, mapping: pd.DataFrame) -> JSON:
@@ -142,6 +145,17 @@ def generate_modified_json(json_data: JSON, mapping: pd.DataFrame) -> JSON:
                 'id': r.modified_id,
                 'sequence': r.modified_seq,
             }})
+            for ii, rr in mapping.query('modified_id == @r.modified_id & modified_ptm').iterrows():
+                print('PTM:', ii, rr)
+                pprint(modified_json['sequences'][-1])
+                if not('modifications' in modified_json['sequences'][-1]['protein'].keys()):
+                    modified_json['sequences'][-1]['protein']['modifications'] = []
+                ptmType_ = f"{poly_to_ligand['protein'][rr.seq]}_POLYBONDS"
+                ptmPosition_ = rr.modified_pos
+                modified_json['sequences'][-1]['protein']['modifications'].append(
+                    {"ptmType": ptmType_, "ptmPosition": ptmPosition_},
+                )
+                pprint(modified_json['sequences'][-1])
 
     def get_(id, pos, col):
         return mapping.loc[(id, pos), col]
@@ -168,6 +182,12 @@ def generate_modified_json(json_data: JSON, mapping: pd.DataFrame) -> JSON:
                 (get_(id2, pos2,     'modified_id'), int(get_(id2, pos2,     'modified_pos')), backbone_atoms[type2][0]),
                 (get_(id2, pos2 + 1, 'modified_id'), int(get_(id2, pos2 + 1, 'modified_pos')), backbone_atoms[type2][1]),
             ])
+
+    #modified_json['userCCDPath'] = '/cluster/project/beltrao/jjaenes/25.06.03_batch-infer/projects/alphafold3-polymer-bonds/user_ccd/polybonds.cif'
+    userCCD_path = '/cluster/project/beltrao/jjaenes/25.06.03_batch-infer/projects/alphafold3-polymer-bonds/user_ccd/polybonds.json'
+    with open(userCCD_path, 'r') as fh:
+        userCCD_data = json.load(fh)
+        modified_json['userCCD'] = userCCD_data['userCCD']
 
     return modified_json
 
@@ -206,8 +226,8 @@ def post_process_structure(model_path: Path, corrected_model_path: Path, mapping
     for chain_id in empty_chain_id:
         struct[0].detach_child(chain_id)
 
-    #io = Bio.PDB.PDBIO()
-    io = Bio.PDB.MMCIFIO()
+    io = Bio.PDB.PDBIO()
+    #io = Bio.PDB.MMCIFIO()
     io.set_structure(struct)
     io.save(str(corrected_model_path))
 
@@ -228,10 +248,14 @@ def process_json_files(source_path: Path, output_path: Path, mapping_path: Path 
 
     # Process files
     for json_path in source_path.glob('*.json'):
+        if not(json_path.stem in {'5EDV_polybonds', '5EDV_seqonly', '6xbe_polybonds', '6xbe_seqonly',}):
+            print(json_path.stem, 'skipping')
+            continue
+
         modified_json_path = output_path / json_path.name
         tsv_mapping_path = mapping_path / json_path.with_suffix('.tsv').name
         cif_path = predict_path / json_path.stem / f'{json_path.stem}_model.cif.gz'
-        mod_path = predict_path / json_path.stem / f'{json_path.stem}_model_corrected.cif'
+        mod_path = predict_path / json_path.stem / f'{json_path.stem}_model_corrected.pdb'
 
         if not modified_json_path.is_file():
             try:
