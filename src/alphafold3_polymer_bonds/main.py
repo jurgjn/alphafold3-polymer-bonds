@@ -22,7 +22,7 @@ Usage:
 Authors: Ricardo Heinzmann, Jürgen Jänes
 """
 
-import argparse, gzip, importlib, importlib.metadata, json, string, sys
+import argparse, gzip, importlib, importlib.metadata, importlib.resources, json, string, sys
 
 from copy import deepcopy
 from pathlib import Path
@@ -184,7 +184,8 @@ def generate_modified_json(json_data: JSON, mapping: pd.DataFrame) -> JSON:
             ])
 
     #modified_json['userCCDPath'] = '/cluster/project/beltrao/jjaenes/25.06.03_batch-infer/projects/alphafold3-polymer-bonds/user_ccd/polybonds.cif'
-    userCCD_path = '/cluster/project/beltrao/jjaenes/25.06.03_batch-infer/projects/alphafold3-polymer-bonds/user_ccd/polybonds.json'
+    #userCCD_path = '/cluster/project/beltrao/jjaenes/25.06.03_batch-infer/projects/alphafold3-polymer-bonds/user_ccd/polybonds.json'
+    userCCD_path = importlib.resources.files('alphafold3_polymer_bonds') / 'data/polybonds.json'
     with open(userCCD_path, 'r') as fh:
         userCCD_data = json.load(fh)
         modified_json['userCCD'] = userCCD_data['userCCD']
@@ -248,9 +249,9 @@ def process_json_files(source_path: Path, output_path: Path, mapping_path: Path 
 
     # Process files
     for json_path in source_path.glob('*.json'):
-        if not(json_path.stem in {'5EDV_polybonds', '5EDV_seqonly', '6xbe_polybonds', '6xbe_seqonly',}):
-            print(json_path.stem, 'skipping')
-            continue
+        #if not(json_path.stem in {'5EDV_polybonds', '5EDV_seqonly', '6xbe_polybonds', '6xbe_seqonly',}):
+        #    print(json_path.stem, 'skipping')
+        #    continue
 
         modified_json_path = output_path / json_path.name
         tsv_mapping_path = mapping_path / json_path.with_suffix('.tsv').name
@@ -276,8 +277,8 @@ def process_json_files(source_path: Path, output_path: Path, mapping_path: Path 
             print(f"Saved modified file: {modified_json_path}")
 
             # Write mapping
-            residue_mapping.to_csv(tsv_mapping_path, sep='\t')
-            print(f"Saved residue mapping: {tsv_mapping_path}")
+            #residue_mapping.to_csv(tsv_mapping_path, sep='\t')
+            #print(f"Saved residue mapping: {tsv_mapping_path}")
 
         elif cif_path.is_file() and not mod_path.is_file():
             print(f"Post-processing structure:", cif_path)
