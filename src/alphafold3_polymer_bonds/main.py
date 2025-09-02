@@ -77,7 +77,7 @@ def generate_residue_mapping(json_data: JSON) -> pd.DataFrame:
     """
     columns_ = ['type', 'id', 'seq']
     df_ = pd.DataFrame.from_records([(next(iter(seq.keys())), next(iter(seq.values()))['id'], next(iter(seq.values()))['sequence']) \
-        for seq in json_data['sequences']], columns=columns_)
+        for seq in json_data['sequences'] if next(iter(seq.keys())) != 'ligand'], columns=columns_)
     df_['seq'] = df_['seq'].map(list)
     df_['pos'] = df_['seq'].map(lambda seq: range(1, len(seq) + 1))
 
@@ -88,14 +88,14 @@ def generate_residue_mapping(json_data: JSON) -> pd.DataFrame:
         (pair_[0][0], pair_[0][1], pair_[0][2], pair_[1][0], pair_[1][1], pair_[1][2]) for pair_ in bondedAtomPairs_iter], columns=columns_)
 
     df_['modified_type'] = df_['type']
-    df_['modified_ptm'] = False
+    #df_['modified_ptm'] = False
     for i, r in bondedAtomPairs.iterrows():
         type1 = df_.loc[(r.id1, r.pos1), 'type']
         type2 = df_.loc[(r.id2, r.pos2), 'type']
         print(r.id1, r.pos1, r.id2, r.pos2, type1, type2)
-        if (type1 != 'ligand') and (type2 == 'protein'):
-            df_.loc[(r.id2, r.pos2), 'modified_ptm'] = True
-        elif (type1 != 'ligand') and (type2 != 'ligand'):
+        #if (type1 != 'ligand') and (type2 == 'protein'):
+        #    df_.loc[(r.id2, r.pos2), 'modified_ptm'] = True
+        if (type1 != 'ligand') and (type2 != 'ligand'):
             df_.loc[(r.id2, r.pos2), 'modified_type'] = 'ligand'
 
     df_['modified_seq'] = df_['seq']
@@ -109,21 +109,20 @@ def generate_residue_mapping(json_data: JSON) -> pd.DataFrame:
         if i1[0] != i2[0]: # new chain
             id_prefix = iter(string.ascii_uppercase)
             df_.loc[i2, 'modified_id'] = ''
-        elif i1[0] == i2[0] and r1.modified_type != r2.modified_type and r2.modified_type == 'ligand': # ligand transformation
+        elif i1[0] == i2[0] and r1.modified_type != r2.modified_type: # ligand transformation
             df_.loc[i2, 'modified_id'] = next(id_prefix)
         else: # walking along existing chain
             df_.loc[i2, 'modified_id'] = df_.loc[i1, 'modified_id']            
     df_['modified_id'] = df_.index.get_level_values('id') + df_['modified_id']
     df_['modified_pos'] = df_.groupby(['modified_id', 'modified_type']).cumcount() + 1
 
-    cols_ = ['id', 'pos', 'type', 'seq', 'modified_id', 'modified_pos', 'modified_type', 'modified_ptm', 'modified_seq']
+    cols_ = ['id', 'pos', 'type', 'seq', 'modified_id', 'modified_pos', 'modified_type', 'modified_seq']
     return df_.reset_index()[cols_].set_index(['id', 'pos'])
 
 def generate_modified_json(json_data: JSON, mapping: pd.DataFrame) -> JSON:
     """
     Modify json_data based on the specified residue mapping
     """
-
     modified_json = deepcopy(json_data)
     # TODO - ordering does not match what's in original file (can infer from json_data)
     sequences = mapping.groupby('modified_id').agg(
@@ -145,17 +144,10 @@ def generate_modified_json(json_data: JSON, mapping: pd.DataFrame) -> JSON:
                 'id': r.modified_id,
                 'sequence': r.modified_seq,
             }})
-            for ii, rr in mapping.query('modified_id == @r.modified_id & modified_ptm').iterrows():
-                print('PTM:', ii, rr)
-                pprint(modified_json['sequences'][-1])
-                if not('modifications' in modified_json['sequences'][-1]['protein'].keys()):
-                    modified_json['sequences'][-1]['protein']['modifications'] = []
-                ptmType_ = f"{poly_to_ligand['protein'][rr.seq]}_POLYBONDS"
-                ptmPosition_ = rr.modified_pos
-                modified_json['sequences'][-1]['protein']['modifications'].append(
-                    {"ptmType": ptmType_, "ptmPosition": ptmPosition_},
-                )
-                pprint(modified_json['sequences'][-1])
+
+    for seq in json_data['sequences']:
+        if next(iter(seq.keys())) == 'ligand':
+            modified_json['sequences'].append(seq)
 
     def get_(id, pos, col):
         return mapping.loc[(id, pos), col]
@@ -185,11 +177,16 @@ def generate_modified_json(json_data: JSON, mapping: pd.DataFrame) -> JSON:
 
     #modified_json['userCCDPath'] = '/cluster/project/beltrao/jjaenes/25.06.03_batch-infer/projects/alphafold3-polymer-bonds/user_ccd/polybonds.cif'
     #userCCD_path = '/cluster/project/beltrao/jjaenes/25.06.03_batch-infer/projects/alphafold3-polymer-bonds/user_ccd/polybonds.json'
+    '''
     userCCD_path = importlib.resources.files('alphafold3_polymer_bonds') / 'data/polybonds.json'
     with open(userCCD_path, 'r') as fh:
         userCCD_data = json.load(fh)
-        modified_json['userCCD'] = userCCD_data['userCCD']
-
+        #for lig_ in userCCD_data.values():
+        #    print(lig_)
+        lig_all_ = ''.join([lig_ for lig_ in userCCD_data.values()])
+        modified_json['userCCD'] = lig_all_
+        #modified_json['userCCD'] = userCCD_data['userCCD']
+    '''
     return modified_json
 
 def post_process_structure(model_path: Path, corrected_model_path: Path, mapping: pd.DataFrame):
