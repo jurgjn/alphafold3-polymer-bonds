@@ -25,22 +25,23 @@ then
 else
     echo "Using low-memory setup (40 GB GPU RAM)"
     echo Adjusting pair_transition_shard_spec in model_config.py
-    git apply <<EOF                                                                                                        
-diff --git a/src/alphafold3/model/model_config.py b/src/alphafold3/model/model_config.py                                   
-index 2040d8f..54d13fc 100644                                                                                              
---- a/src/alphafold3/model/model_config.py                                                                                 
-+++ b/src/alphafold3/model/model_config.py                                                                                 
-@@ -26,7 +26,8 @@ class GlobalConfig(base_config.BaseConfig):                                                              
-   pair_attention_chunk_size: Sequence[_Shape2DType] = ((1536, 128), (None, 32))                                           
-   pair_transition_shard_spec: Sequence[_Shape2DType] = (                                                                  
-       (2048, None),                                                                                                       
--      (None, 1024),                                                                                                       
-+      (3072, 1024),                                                                                                       
-+      (None, 512),                                                                                                        
-   )                                                                                                                       
-   # Note: flash_attention_implementation = 'xla' means no flash attention.                                                
-   flash_attention_implementation: attention.Implementation = 'triton'                                                     
-EOF                                                                                                                        
+    git apply <<EOF
+diff --git a/src/alphafold3/model/model_config.py b/src/alphafold3/model/model_config.py
+index 2040d8f..54d13fc 100644
+--- a/src/alphafold3/model/model_config.py
++++ b/src/alphafold3/model/model_config.py
+@@ -26,7 +26,8 @@ class GlobalConfig(base_config.BaseConfig):
+   pair_attention_chunk_size: Sequence[_Shape2DType] = ((1536, 128), (None, 32))
+   pair_transition_shard_spec: Sequence[_Shape2DType] = (
+       (2048, None),
+-      (None, 1024),
++      (3072, 1024),
++      (None, 512),
+   )
+   # Note: flash_attention_implementation = 'xla' means no flash attention.
+   flash_attention_implementation: attention.Implementation = 'triton'
+EOF                                                                                                                       
+
     echo Enabling unified memory
     XLA_PYTHON_CLIENT_PREALLOCATE=false
     TF_FORCE_UNIFIED_MEMORY=true
