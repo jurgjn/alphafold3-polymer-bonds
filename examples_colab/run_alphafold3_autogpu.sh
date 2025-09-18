@@ -40,7 +40,7 @@ index 2040d8f..54d13fc 100644
    )
    # Note: flash_attention_implementation = 'xla' means no flash attention.
    flash_attention_implementation: attention.Implementation = 'triton'
-EOF                                                                                                                       
+EOF
 
     echo Enabling unified memory
     XLA_PYTHON_CLIENT_PREALLOCATE=false
