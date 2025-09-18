@@ -6,7 +6,6 @@ mkdir /app
 cd /app
 git clone https://github.com/google-deepmind/alphafold3.git alphafold
 cd alphafold
-ALPHAFOLD3_VERSION='v3.0.1'
 git checkout $ALPHAFOLD3_VERSION
 cd -
 apt-get install --yes --quiet python3.12 python3-pip python3.12-venv python3.12-dev git wget gcc g++ make zlib1g-dev zstd
