@@ -1,15 +1,15 @@
 
-import argparse, copy, gzip, importlib, importlib.metadata, importlib.resources, json, string, sys
+import argparse, copy, gzip, importlib, importlib.metadata, importlib.resources, json, os, os.path, string, sys
 from copy import deepcopy
 from pathlib import Path
 from pprint import pprint
+from typing import Dict, List, Tuple, Any, TypeAlias
 
 import humanfriendly
 
-from typing import Dict, List, Tuple, Any, TypeAlias
-JSON: TypeAlias = dict[str, "JSON"] | list["JSON"] | str | int | float | bool | None # https://github.com/python/typing/issues/182#issuecomment-1320974824
+JSON: TypeAlias = dict[str, "JSON"] | list["JSON"] | str | int | float | bool | None #https://github.com/python/typing/issues/182#issuecomment-1320974824
 
-def _open(path):
+def _open_r(path):
     if path.endswith('.gz'):
         return gzip.open(path, 'rt')
     else:
@@ -25,7 +25,7 @@ def _encode_indices_arrays(js):
 
 def read_json(path):
     """Read json while preserving order of keys from file"""
-    with _open(path, 'r') as fh:
+    with _open_r(path) as fh:
         return json.load(fh, object_pairs_hook=collections.OrderedDict)
 
 def print_json(js, max_size=500):
