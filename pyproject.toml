@@ -21,7 +21,9 @@ license = "MIT"
 license-files = ["LICENSE"]
 dependencies = [
   "biopython",
+  "humanfriendly",
   "pandas",
+  "py3Dmol",
 ]
 
 [project.scripts]
