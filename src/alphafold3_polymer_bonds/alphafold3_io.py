@@ -1,5 +1,5 @@
 
-import argparse, copy, gzip, importlib, importlib.metadata, importlib.resources, json, os, os.path, string, sys
+import argparse, collections, copy, gzip, importlib, importlib.metadata, importlib.resources, json, os, os.path, string, sys
 from copy import deepcopy
 from pathlib import Path
 from pprint import pprint
