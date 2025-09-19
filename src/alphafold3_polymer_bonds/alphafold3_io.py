@@ -66,3 +66,16 @@ def count_tokens(path):
             seq_len = len(seq['protein']['sequence'])
             n_tokens += n_chains * seq_len
     return n_tokens
+
+def multimer_json(*monomers):
+    js = copy.deepcopy(monomers[0])
+    js['name'] = '_'.join([monomer['name'] for monomer in monomers])
+    for monomer in monomers[1:]:
+        js['sequences'].append(copy.deepcopy(monomer['sequences'][0]))
+    for monomer, chain_id in zip(js['sequences'], string.ascii_uppercase):
+        monomer['protein']['id'] = [chain_id]
+    return js
+
+def read_summary_confidences(path, name):
+    js = read_json(os.path.join(path, name, f'{name}_summary_confidences.json'))
+    return js
