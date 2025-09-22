@@ -1,4 +1,4 @@
-#!/usr/bin/env bash                                                                                                        
+#!/usr/bin/env bash
 # https://github.com/google-deepmind/alphafold3/blob/main/docs/performance.md
 
 cd /app/alphafold

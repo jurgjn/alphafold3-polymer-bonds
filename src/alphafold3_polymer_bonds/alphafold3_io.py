@@ -23,7 +23,7 @@ def _encode_indices_arrays(js):
         js,
     )
 
-def read_json(path):
+def read_input_json(path):
     """Read json while preserving order of keys from file"""
     with _open_r(path) as fh:
         return json.load(fh, object_pairs_hook=collections.OrderedDict)
@@ -32,12 +32,14 @@ def print_json(js, max_size=500):
     """Print json without long MSA strings"""
     js_ = copy.deepcopy(js)
     for sequence in js_['sequences']:
-        for k, v in sequence['protein'].items():
-            if len(v) > max_size:
-                sequence['protein'][k] = f'<{humanfriendly.format_size(len(v))} string>'
+        seq_type = next(iter(sequence.keys()))
+        if seq_type in {'protein', 'dna', 'rna'}:
+            for k, v in sequence[seq_type].items():
+                if len(v) > max_size:
+                    sequence[seq_type][k] = f'<{humanfriendly.format_size(len(v))} string>'
     print(json.dumps(js_, indent=2))
 
-def write_json(js, path):
+def write_input_json(js, path):
     """Write json aiming to match AF3; if path contains {}, replaces with name from js"""
     js_str = _encode_indices_arrays(json.dumps(js, indent=2))
     if '{}' in path:
@@ -58,7 +60,7 @@ def count_tokens(path):
     """Count tokens
     TODO: proteins only, no nucleic acids, no ligands, no PTMs...
     """
-    sequences = read_json(path)['sequences']
+    sequences = read_input_json(path)['sequences']
     n_tokens = 0
     for seq in sequences:
         if 'protein' in seq:
@@ -77,5 +79,5 @@ def multimer_json(*monomers):
     return js
 
 def read_summary_confidences(path, name):
-    js = read_json(os.path.join(path, name, f'{name}_summary_confidences.json'))
+    js = read_input_json(os.path.join(path, name, f'{name}_summary_confidences.json'))
     return js

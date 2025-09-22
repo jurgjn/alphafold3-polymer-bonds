@@ -21,7 +21,6 @@ license = "MIT"
 license-files = ["LICENSE"]
 dependencies = [
   "biopython",
-  "dockq",
   "humanfriendly",
   "pandas",
   "py3Dmol",
