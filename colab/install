@@ -1,6 +1,6 @@
 mkdir -p /app
-ALPHAFOLD3_VERSION='a8ecdb2'
-echo Installing AlphaFold $ALPHAFOLD3_VERSION
+ALPHAFOLD3_VERSION="${ALPHAFOLD3_VERSION:-v3.0.1}"
+echo Installing alphafold3 $ALPHAFOLD3_VERSION
 source <(curl -fsSL https://raw.githubusercontent.com/jurgjn/alphafold3-polymer-bonds/refs/heads/main/colab/install_alphafold3) &> /app/install_alphafold3.txt 
 echo Installing colabfold
 source <(curl -fsSL https://raw.githubusercontent.com/jurgjn/alphafold3-polymer-bonds/refs/heads/main/colab/install_colabfold) &> /app/install_colabfold.txt
