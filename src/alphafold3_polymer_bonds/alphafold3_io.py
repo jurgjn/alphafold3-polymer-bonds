@@ -1,5 +1,5 @@
 
-import argparse, collections, copy, gzip, importlib, importlib.metadata, importlib.resources, json, os, os.path, re, string, sys
+import argparse, collections, copy, gzip, json, os, os.path, re, string, sys
 from copy import deepcopy
 from pathlib import Path
 from pprint import pprint
@@ -23,28 +23,32 @@ def _encode_indices_arrays(js):
         js,
     )
 
+def _sequence_hash(seq):
+    return hashlib.sha1(seq.encode()).hexdigest()
+
 def read_input_json(path):
     """Read json while preserving order of keys from file"""
     with _open_r(path) as fh:
         return json.load(fh, object_pairs_hook=collections.OrderedDict)
 
 def print_json(js, max_size=500):
-    """Print json without long MSA strings"""
-    js_ = copy.deepcopy(js)
-    for sequence in js_['sequences']:
-        seq_type = next(iter(sequence.keys()))
-        if seq_type in {'protein', 'dna', 'rna'}:
-            for k, v in sequence[seq_type].items():
-                if len(v) > max_size:
-                    sequence[seq_type][k] = f'<{humanfriendly.format_size(len(v))} string>'
-    print(json.dumps(js_, indent=2))
+    """Print (part of) json without long MSA strings"""
+    def iter_(js):
+        for k, v in js.items():
+            if k in {'templates', 'unpairedMsa', 'pairedMsa'} and len(v) > max_size:
+                js[k] = f'<{humanfriendly.format_size(len(v))} string>'
+            elif isinstance(v, collections.abc.Mapping):
+                js[k] = iter_(v)
+        return js
+    print(json.dumps(iter_(js), indent=2))
 
 def write_input_json(js, path):
     """Write json aiming to match AF3; if path contains {}, replaces with name from js"""
     js_str = _encode_indices_arrays(json.dumps(js, indent=2))
     if '{}' in path:
         path = path.format(js['name'])
-    os.makedirs(os.path.dirname(path), exist_ok=True)
+    if os.path.dirname(path) != '':
+        os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, 'w') as fh:
         fh.write(js_str)
 
@@ -81,3 +85,21 @@ def multimer_json(*monomers):
 def read_summary_confidences(path, name):
     js = read_input_json(os.path.join(path, name, f'{name}_summary_confidences.json'))
     return js
+
+def get_colabfold_msa(seq, dir='/content/_colabfold_msa'):
+    name = _sequence_hash(seq)
+    path_input = f'{dir}/input/{name}.fasta'
+    print(path_input)
+    os.makedirs(os.path.dirname(path_input), exist_ok=True)
+    with open(path_input, 'w') as f:
+        f.write(f'>{name}\n{seq}')
+
+    path_output = f'{dir}/output'
+    os.makedirs(path_output, exist_ok=True)
+    cmd = f'MPLBACKEND=AGG; source /colabfold_venv/bin/activate; colabfold_batch --msa-only --af3-json {path_input} {path_output}'
+    print(cmd)
+    r = subprocess.run(cmd, capture_output=True, shell=True, executable='/bin/bash')
+    assert r.returncode == 0
+
+    path_output = f'{dir}/output/{name}.json'
+    return read_input_json(path_output)['sequences'][0]

@@ -29,11 +29,12 @@ from pathlib import Path
 from pprint import pprint
 
 from typing import Dict, List, Tuple, Any, TypeAlias
-JSON: TypeAlias = dict[str, "JSON"] | list["JSON"] | str | int | float | bool | None #https://github.com/python/typing/issues/182#issuecomment-1320974824
 
 import pandas as pd
 
 import Bio.PDB, Bio.PDB.mmcifio 
+
+from .alphafold3_io import JSON, read_input_json, print_json, write_input_json, multimer_json, read_summary_confidences
 
 poly_to_ligand = {
     'protein': {
@@ -80,7 +81,6 @@ def generate_residue_mapping(json_data: JSON) -> pd.DataFrame:
         for seq in json_data['sequences'] if next(iter(seq.keys())) != 'ligand'], columns=columns_)
     df_['seq'] = df_['seq'].map(list)
     df_['pos'] = df_['seq'].map(lambda seq: range(1, len(seq) + 1))
-
     df_ = df_.explode(['seq', 'pos']).set_index(['id', 'pos'])
     columns_ = ['id1', 'pos1', 'atom1', 'id2', 'pos2', 'atom2']
     bondedAtomPairs_iter = json_data.get('bondedAtomPairs', [])
@@ -295,34 +295,21 @@ def main():
     parser.add_argument(
         "--source_path", 
         "-s", 
-        default="input/",
-        help="Directory containing input JSON files (default: input/)"
+        help="AlphaFold3 input file with polymer bonds in bondedAtomPairs"
     )
     parser.add_argument(
         "--output_path", 
         "-o", 
-        default="output/",
-        help="Directory to save modified JSON files (default: output/)"
+        help="AlphaFold3 input file with polymer bonds encoded as ligands"
     )
-    #parser.add_argument(
-    #    "--mapping_dir",
-    #    default=None,
-    #    help="Directory to save residue mapping JSON files (optional)"
-    #)
-    #parser.add_argument(
-    #    "--predict_dir",
-    #    default=None,
-    #    help="Directory of AlphaFold3 predictions (optional)"
-    #)
     
     args = parser.parse_args()
     print(f"alphafold3-polymer-bonds v{importlib.metadata.version('alphafold3-polymer-bonds')}")
     print(f"Source file: {args.source_path}")
     print(f"Output file: {args.output_path}")
 
-    with open(args.source_path, 'r') as fh:
-        json_data = json.load(fh)
-        print(f"Loaded: {args.source_path}")
+    json_data = read_input_json(args.source_path)
+    print(f"Loaded: {args.source_path}")
 
     # Generate mapping
     #print(f"Processing {json_path.name}...")
@@ -330,8 +317,7 @@ def main():
 
     # Use mapping to generate modified json and write to file
     modified_json = generate_modified_json(json_data, residue_mapping)
-    with open(args.output_path, 'w') as f:
-        json.dump(modified_json, f, indent=2)
+    write_input_json(modified_json, args.output_path)
     print(f"Saved modified file: {args.output_path}")
 
     #if args.mapping_dir:
