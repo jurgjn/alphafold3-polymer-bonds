@@ -109,3 +109,26 @@ def get_colabfold_msa(seq, dir='/tmp/_get_colabfold_msa'):
         assert r.returncode == 0
 
     return read_input_json(path_output)
+
+def init_json(*seqs):
+    def _get_seq(id, seq):
+        return collections.OrderedDict([('protein', collections.OrderedDict([('id', id),('sequence', seq)]))])
+    js = collections.OrderedDict([
+        ('dialect', 'alphafold3'),
+        ('version', 2),
+        ('name', 'name'),
+        ('sequences', []),
+        ('modelSeeds', [1]),
+        ('bondedAtomPairs', None),
+        ('userCCD', None)])
+    for seq, chain_id in zip(seqs, string.ascii_uppercase):
+        js['sequences'].append(_get_seq(chain_id, seq))
+    return js
+
+def colab_data_pipeline(js):
+    for seq in js['sequences']:
+        if 'protein' in seq.keys():
+            seq_msa = get_colabfold_msa(seq['protein']['sequence'])['sequences'][0]['protein']
+            for field in ['templates', 'unpairedMsa', 'pairedMsa']:
+                seq['protein'][field] = seq_msa[field]
+    return js
