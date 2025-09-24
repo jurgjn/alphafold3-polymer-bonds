@@ -34,11 +34,16 @@ def read_input_json(path):
 def print_json(js, max_size=500):
     """Print (part of) json without long MSA strings"""
     def iter_(js):
+        if isinstance(js, str) or isinstance(js, int) or isinstance(js, list):
+            return js
         for k, v in js.items():
             if k in {'templates', 'unpairedMsa', 'pairedMsa'} and len(v) > max_size:
                 js[k] = f'<{humanfriendly.format_size(len(v))} string>'
             elif isinstance(v, collections.abc.Mapping):
                 js[k] = iter_(v)
+            elif isinstance(v, list):
+                for i in range(len(v)):
+                    v[i] = iter_(v[i])
         return js
     print(json.dumps(iter_(js), indent=2))
 
@@ -86,20 +91,21 @@ def read_summary_confidences(path, name):
     js = read_input_json(os.path.join(path, name, f'{name}_summary_confidences.json'))
     return js
 
-def get_colabfold_msa(seq, dir='/content/_colabfold_msa'):
+def get_colabfold_msa(seq, dir='/tmp/_get_colabfold_msa'):
     name = _sequence_hash(seq)
     path_input = f'{dir}/input/{name}.fasta'
-    print(path_input)
+    #print(path_input)
     os.makedirs(os.path.dirname(path_input), exist_ok=True)
     with open(path_input, 'w') as f:
         f.write(f'>{name}\n{seq}')
 
-    path_output = f'{dir}/output'
-    os.makedirs(path_output, exist_ok=True)
-    cmd = f'MPLBACKEND=AGG; source /colabfold_venv/bin/activate; colabfold_batch --msa-only --af3-json {path_input} {path_output}'
-    print(cmd)
-    r = subprocess.run(cmd, capture_output=True, shell=True, executable='/bin/bash')
-    assert r.returncode == 0
-
     path_output = f'{dir}/output/{name}.json'
+    if not os.path.isfile(path_output):
+        path_output_dir = f'{dir}/output'
+        os.makedirs(path_output_dir, exist_ok=True)
+        cmd = f'MPLBACKEND=AGG; source /colabfold_venv/bin/activate; colabfold_batch --msa-only --af3-json {path_input} {path_output_dir}'
+        print(cmd)
+        r = subprocess.run(cmd, capture_output=True, shell=True, executable='/bin/bash')
+        assert r.returncode == 0
+
     return read_input_json(path_output)
