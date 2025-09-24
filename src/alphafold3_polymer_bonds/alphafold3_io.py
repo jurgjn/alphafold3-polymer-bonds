@@ -102,4 +102,4 @@ def get_colabfold_msa(seq, dir='/content/_colabfold_msa'):
     assert r.returncode == 0
 
     path_output = f'{dir}/output/{name}.json'
-    return read_input_json(path_output)['sequences'][0]
+    return read_input_json(path_output)
