@@ -34,7 +34,7 @@ import pandas as pd
 
 import Bio.PDB, Bio.PDB.mmcifio 
 
-from .alphafold3_io import JSON, read_input_json, print_json, write_input_json, multimer_json, read_summary_confidences
+from .alphafold3_io import JSON, read_input_json, write_input_json
 
 poly_to_ligand = {
     'protein': {

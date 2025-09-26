@@ -31,7 +31,7 @@ def read_input_json(path):
     with _open_r(path) as fh:
         return json.load(fh, object_pairs_hook=collections.OrderedDict)
 
-def print_json(js, max_size=500):
+def print_input_json(js, max_size=500):
     """Print (part of) json without long MSA strings"""
     def iter_(js):
         if isinstance(js, str) or isinstance(js, int) or isinstance(js, list):
@@ -78,14 +78,14 @@ def count_tokens(path):
             n_tokens += n_chains * seq_len
     return n_tokens
 
-def multimer_json(*monomers):
-    js = copy.deepcopy(monomers[0])
-    js['name'] = '_'.join([monomer['name'] for monomer in monomers])
-    for monomer in monomers[1:]:
-        js['sequences'].append(copy.deepcopy(monomer['sequences'][0]))
-    for monomer, chain_id in zip(js['sequences'], string.ascii_uppercase):
-        monomer['protein']['id'] = [chain_id]
-    return js
+#def multimer_json(*monomers):
+#    js = copy.deepcopy(monomers[0])
+#    js['name'] = '_'.join([monomer['name'] for monomer in monomers])
+#    for monomer in monomers[1:]:
+#        js['sequences'].append(copy.deepcopy(monomer['sequences'][0]))
+#    for monomer, chain_id in zip(js['sequences'], string.ascii_uppercase):
+#        monomer['protein']['id'] = [chain_id]
+#    return js
 
 def read_summary_confidences(path, name):
     js = read_input_json(os.path.join(path, name, f'{name}_summary_confidences.json'))
@@ -110,7 +110,7 @@ def get_colabfold_msa(seq, dir='/tmp/_get_colabfold_msa'):
 
     return read_input_json(path_output)
 
-def init_json(*seqs):
+def init_input_json(*seqs):
     def _get_seq(id, seq):
         return collections.OrderedDict([('protein', collections.OrderedDict([('id', id),('sequence', seq)]))])
     js = collections.OrderedDict([
