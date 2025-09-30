@@ -6,7 +6,6 @@ AlphaFold3
 [does not allow](https://github.com/google-deepmind/alphafold3/blob/main/docs/input.md#bonds)
 covalent bonds between/within polymer chains (protein, DNA, RNA).
 We work around this limitation by treating one of the corresponding residue or nucleic acid as a modified residue/amino-acid.
-AlphaFold3 can, in many cases, infer the bonds from context. See below for cases where this matters. 
 In principle, this may enable AlphaFold3 to explicitly model e.g. disulfide bonds, cyclic peptides, zero-length crosslinkers, protein-DNA bonds..
 
 - For other attempts at changing the tokenisation scheme to accomodate things, see at:
