@@ -8,9 +8,6 @@ covalent bonds between/within polymer chains (protein, DNA, RNA).
 We work around this limitation by treating one of the corresponding residue or nucleic acid as a modified residue/amino-acid.
 In principle, this may enable AlphaFold3 to explicitly model e.g. disulfide bonds, cyclic peptides, zero-length crosslinkers, protein-DNA bonds..
 
-- For other attempts at changing the tokenisation scheme to accomodate things, see at:
-- This will not run on the AlphaFold3 web server, we have examples running on Google Colab (Pro)
-
 *This is currently exploratory, see below for specifc examples. Also take a look at complementary work:
 [KosinskiLab/af3x](https://github.com/KosinskiLab/af3x)
 and
