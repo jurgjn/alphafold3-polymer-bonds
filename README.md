@@ -5,7 +5,7 @@
 AlphaFold3
 [does not allow](https://github.com/google-deepmind/alphafold3/blob/main/docs/input.md#bonds)
 covalent bonds between/within polymer chains (protein, DNA, RNA).
-We work around this limitation by treating one of the corresponding residue or nucleic acid as a modified residue/amino-acid.
+We work around this limitation by treating one of the corresponding residues/nucleic acids as a ligand.
 In principle, this may enable AlphaFold3 to explicitly model e.g. disulfide bonds, cyclic peptides, zero-length crosslinkers, protein-DNA bonds..
 
 *This is currently exploratory, see below for specifc examples. Also take a look at complementary work:
@@ -13,12 +13,16 @@ In principle, this may enable AlphaFold3 to explicitly model e.g. disulfide bond
 and
 [bio-phys/polyUb-AF](https://github.com/bio-phys/polyUb-AF).*
 
-![1AAR](examples/visualise/1AAR.png)
-1AAR with (left, RMSD<1) vs without (right, RMSD>10) covalent bond between Lys48 and Gly76, AlphaFold3 run without templates
+![1DF6](https://raw.githubusercontent.com/jurgjn/alphafold3-polymer-bonds/main/examples/visualise/1DF6.png)
+
+*[1DF6](https://www.rcsb.org/structure/1DF6): macrocyclic peptide cycloviolacin O1 with (left, RMSD=1.979) and without (right, RMSD=2.632) a covalent bond between Ser1 and Glu30. The model with the explicit covalent bond reproduces three cysteine bridges as in the experimental structure. The model without the covalent bond does not.*
+
+![6OQ1](https://raw.githubusercontent.com/jurgjn/alphafold3-polymer-bonds/main/examples/visualise/6OQ1.png)
+
+*[6OQ1](https://www.rcsb.org/structure/6OQ1): K11/K48 branched tri-ubiquitin with (left, RMSD=6.157) and without (right, RMSD=9.676) covalent bonds between K11/K48 (orange side chains) and Gly76 (red side chains).*
 
 ## Quick start
 ```bash
 pip install alphafold3-polymer-bonds
 alphafold3_polymer_bonds --help
 ```
-
