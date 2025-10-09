@@ -293,23 +293,23 @@ def main():
         description="Model protein-protein bonds using ligand bridges in AlphaFold3 JSON files"
     )
     parser.add_argument(
-        "--source_path", 
+        "--bonds_path", 
         "-s", 
         help="AlphaFold3 input file with polymer bonds in bondedAtomPairs"
     )
     parser.add_argument(
-        "--output_path", 
+        "--encoded_path", 
         "-o", 
         help="AlphaFold3 input file with polymer bonds encoded as ligands"
     )
     
     args = parser.parse_args()
     print(f"alphafold3-polymer-bonds v{importlib.metadata.version('alphafold3-polymer-bonds')}")
-    print(f"Source file: {args.source_path}")
-    print(f"Output file: {args.output_path}")
+    print(f"Source file: {args.bonds_path}")
+    print(f"Output file: {args.encoded_path}")
 
-    json_data = read_input_json(args.source_path)
-    print(f"Loaded: {args.source_path}")
+    json_data = read_input_json(args.bonds_path)
+    print(f"Loaded: {args.bonds_path}")
 
     # Generate mapping
     #print(f"Processing {json_path.name}...")
@@ -317,8 +317,8 @@ def main():
 
     # Use mapping to generate modified json and write to file
     modified_json = generate_modified_json(json_data, residue_mapping)
-    write_input_json(modified_json, args.output_path)
-    print(f"Saved modified file: {args.output_path}")
+    write_input_json(modified_json, args.encoded_path)
+    print(f"Saved modified file: {args.encoded_path}")
 
     #if args.mapping_dir:
     #    print(f"Residue mapping directory: {args.mapping_dir}")

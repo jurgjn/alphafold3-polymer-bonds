@@ -1,0 +1,75 @@
+{
+  "dialect": "alphafold3",
+  "version": 2,
+  "name": "1AAR_encoded",
+  "sequences": [
+    {
+      "protein": {
+        "id": "A",
+        "sequence": "MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRG"
+      }
+    },
+    {
+      "ligand": {
+        "id": "AA",
+        "ccdCodes": [
+          "GLY"
+        ]
+      }
+    },
+    {
+      "protein": {
+        "id": "AB",
+        "sequence": "HOHHOHHOHHOHHOHHOHHOH"
+      }
+    },
+    {
+      "protein": {
+        "id": "B",
+        "sequence": "MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGGHOHHOHHOHHOHHOHHOHHOHHOH"
+      }
+    }
+  ],
+  "modelSeeds": [
+    1
+  ],
+  "bondedAtomPairs": [
+    [
+      [
+        "A",
+        75,
+        "C"
+      ],
+      [
+        "AA",
+        1,
+        "N"
+      ]
+    ],
+    [
+      [
+        "B",
+        48,
+        "NZ"
+      ],
+      [
+        "AA",
+        1,
+        "C"
+      ]
+    ],
+    [
+      [
+        "AA",
+        1,
+        "C"
+      ],
+      [
+        "AB",
+        1,
+        "N"
+      ]
+    ]
+  ],
+  "userCCD": null
+}

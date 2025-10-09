@@ -1,0 +1,101 @@
+{
+  "dialect": "alphafold3",
+  "version": 2,
+  "name": "8S6W_encoded",
+  "sequences": [
+    {
+      "rna": {
+        "id": "A",
+        "sequence": "UGGAAGAAAUCGAAGAAGAUGAAGAACGCGAAGAAC"
+      }
+    },
+    {
+      "rna": {
+        "id": "B",
+        "sequence": "UGGAAGAAAUCGAAGAAGAUGAAGAACGCGAAGAAC"
+      }
+    },
+    {
+      "ligand": {
+        "id": "C",
+        "ccdCodes": [
+          "A"
+        ]
+      }
+    },
+    {
+      "rna": {
+        "id": "CA",
+        "sequence": "UCUUCUUCGAUUUCUUCCAGUUCUUCGCGUUCUUC"
+      }
+    },
+    {
+      "rna": {
+        "id": "D",
+        "sequence": "AUCUUCUUCGAUUUCUUCCAGUUCUUCGCGUUCUU"
+      }
+    },
+    {
+      "ligand": {
+        "id": "DA",
+        "ccdCodes": [
+          "C"
+        ]
+      }
+    }
+  ],
+  "modelSeeds": [
+    1
+  ],
+  "bondedAtomPairs": [
+    [
+      [
+        "CA",
+        35,
+        "O3'"
+      ],
+      [
+        "C",
+        1,
+        "P"
+      ]
+    ],
+    [
+      [
+        "C",
+        1,
+        "C3'"
+      ],
+      [
+        "CA",
+        1,
+        "OP3"
+      ]
+    ],
+    [
+      [
+        "D",
+        35,
+        "C3'"
+      ],
+      [
+        "DA",
+        1,
+        "OP3"
+      ]
+    ],
+    [
+      [
+        "D",
+        1,
+        "P"
+      ],
+      [
+        "DA",
+        1,
+        "O3'"
+      ]
+    ]
+  ],
+  "userCCD": null
+}

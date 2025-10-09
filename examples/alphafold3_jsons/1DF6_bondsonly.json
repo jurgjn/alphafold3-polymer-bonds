@@ -1,0 +1,31 @@
+{
+  "dialect": "alphafold3",
+  "version": 2,
+  "name": "1DF6_bondsonly",
+  "sequences": [
+    {
+      "protein": {
+        "id": "A",
+        "sequence": "SCVYIPCTVTALLGCSCSNRVCYNGIPCAE"
+      }
+    }
+  ],
+  "modelSeeds": [
+    1
+  ],
+  "bondedAtomPairs": [
+    [
+      [
+        "A",
+        1,
+        "N"
+      ],
+      [
+        "A",
+        30,
+        "C"
+      ]
+    ]
+  ],
+  "userCCD": null
+}

@@ -5,6 +5,8 @@ from pathlib import Path
 from pprint import pprint
 from typing import Dict, List, Tuple, Any, TypeAlias
 
+import Bio.PDB, Bio.PDB.mmcifio, Bio.PDB.Polypeptide
+
 import humanfriendly
 
 JSON: TypeAlias = dict[str, "JSON"] | list["JSON"] | str | int | float | bool | None #https://github.com/python/typing/issues/182#issuecomment-1320974824
@@ -25,6 +27,21 @@ def _encode_indices_arrays(js):
 
 def _sequence_hash(seq):
     return hashlib.sha1(seq.encode()).hexdigest()
+
+def init_input_json(*seqs):
+    def _get_seq(id, seq):
+        return collections.OrderedDict([('protein', collections.OrderedDict([('id', id),('sequence', seq)]))])
+    js = collections.OrderedDict([
+        ('dialect', 'alphafold3'),
+        ('version', 2),
+        ('name', 'name'),
+        ('sequences', []),
+        ('modelSeeds', [1]),
+        ('bondedAtomPairs', None),
+        ('userCCD', None)])
+    for seq, chain_id in zip(seqs, string.ascii_uppercase):
+        js['sequences'].append(_get_seq(chain_id, seq))
+    return js
 
 def read_input_json(path):
     """Read json while preserving order of keys from file"""
@@ -49,12 +66,20 @@ def print_input_json(js, max_size=500):
 
 def write_input_json(js, path):
     """Write json aiming to match AF3; if path contains {}, replaces with name from js"""
-    js_str = _encode_indices_arrays(json.dumps(js, indent=2))
+    # Infer path from name attribute
     if '{}' in path:
         path = path.format(js['name'])
+
+    # Infer name attribute from path
+    basename = os.path.basename(path).rstrip('.json')
+    if not(basename.startswith(js['name'])):
+        js['name'] = basename
+        print(f'Inferring name attribute {js["name"]} from path - {path}')
+
     if os.path.dirname(path) != '':
         os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, 'w') as fh:
+        js_str = _encode_indices_arrays(json.dumps(js, indent=2))
         fh.write(js_str)
 
 def santise_name(s):
@@ -77,15 +102,6 @@ def count_tokens(path):
             seq_len = len(seq['protein']['sequence'])
             n_tokens += n_chains * seq_len
     return n_tokens
-
-#def multimer_json(*monomers):
-#    js = copy.deepcopy(monomers[0])
-#    js['name'] = '_'.join([monomer['name'] for monomer in monomers])
-#    for monomer in monomers[1:]:
-#        js['sequences'].append(copy.deepcopy(monomer['sequences'][0]))
-#    for monomer, chain_id in zip(js['sequences'], string.ascii_uppercase):
-#        monomer['protein']['id'] = [chain_id]
-#    return js
 
 def read_summary_confidences(path, name):
     js = read_input_json(os.path.join(path, name, f'{name}_summary_confidences.json'))
@@ -110,25 +126,58 @@ def get_colabfold_msa(seq, dir='/tmp/_get_colabfold_msa'):
 
     return read_input_json(path_output)
 
-def init_input_json(*seqs):
-    def _get_seq(id, seq):
-        return collections.OrderedDict([('protein', collections.OrderedDict([('id', id),('sequence', seq)]))])
-    js = collections.OrderedDict([
-        ('dialect', 'alphafold3'),
-        ('version', 2),
-        ('name', 'name'),
-        ('sequences', []),
-        ('modelSeeds', [1]),
-        ('bondedAtomPairs', None),
-        ('userCCD', None)])
-    for seq, chain_id in zip(seqs, string.ascii_uppercase):
-        js['sequences'].append(_get_seq(chain_id, seq))
-    return js
-
 def colab_data_pipeline(js):
     for seq in js['sequences']:
         if 'protein' in seq.keys():
             seq_msa = get_colabfold_msa(seq['protein']['sequence'])['sequences'][0]['protein']
             for field in ['templates', 'unpairedMsa', 'pairedMsa']:
                 seq['protein'][field] = seq_msa[field]
+    return js
+
+def get_structure(path, only_first=True):
+    """Attempt to read a structure using Bio.PDB while transparently handling compression/PDB-vs-CIF"""
+    # Check file format - pdb1 is used by rcsb bioassemblies...
+    if path.endswith('.pdb') or path.endswith('.pdb1') or path.endswith('.pdb.gz') or path.endswith('.pdb1.gz'):
+        parser = Bio.PDB.PDBParser(QUIET=True)
+    else:
+        parser = Bio.PDB.MMCIFParser(QUIET=True)
+
+    # Check for .gz compresssion
+    if path.endswith('.gz'):
+        with gzip.open(path, 'rt') as fh:
+            struct = parser.get_structure(path, fh)
+    else:
+        struct = parser.get_structure(path, path)
+
+    return struct[0] if only_first else struct
+
+def input_json_sequence_init(type, id, sequence):
+    return collections.OrderedDict([
+        (type, collections.OrderedDict([
+            ('id', id),
+            ('sequence', sequence)
+        ]))
+    ])
+
+def input_json_sequence_from_chain(chain):
+    residues = [ Bio.PDB.Polypeptide.protein_letters_3to1.get(residue.resname, residue.resname) for residue in chain.get_residues() ]
+    # Check if residues in sequence are a subset with <=
+    if set(residues) <= {'A', 'C', 'G', 'T'}:
+        type = 'dna'
+    elif set(residues) <= {'A', 'C', 'G', 'U'}:
+        type = 'rna'
+    else:
+        type = 'protein'
+    return input_json_sequence_init(
+        type=type,
+        id=chain.id,
+        sequence=''.join(residues),
+    )
+
+def input_json_from_rcsb(path):
+    struct = get_structure(path)
+    js = init_input_json()
+    js['name'] = os.path.basename(path).removesuffix('.gz').removesuffix('.cif').removesuffix('.pdb')
+    for chain in Bio.PDB.Selection.unfold_entities(entity_list=struct, target_level='C'):
+        js['sequences'].append(input_json_sequence_from_chain(chain))
     return js

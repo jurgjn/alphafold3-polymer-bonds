@@ -1,0 +1,51 @@
+{
+  "dialect": "alphafold3",
+  "version": 2,
+  "name": "1DF6_encoded",
+  "sequences": [
+    {
+      "protein": {
+        "id": "A",
+        "sequence": "SCVYIPCTVTALLGCSCSNRVCYNGIPCA"
+      }
+    },
+    {
+      "ligand": {
+        "id": "AA",
+        "ccdCodes": [
+          "GLU"
+        ]
+      }
+    }
+  ],
+  "modelSeeds": [
+    1
+  ],
+  "bondedAtomPairs": [
+    [
+      [
+        "A",
+        29,
+        "C"
+      ],
+      [
+        "AA",
+        1,
+        "N"
+      ]
+    ],
+    [
+      [
+        "A",
+        1,
+        "N"
+      ],
+      [
+        "AA",
+        1,
+        "C"
+      ]
+    ]
+  ],
+  "userCCD": null
+}

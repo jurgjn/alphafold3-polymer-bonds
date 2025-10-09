@@ -1,11 +1,13 @@
 alphafold3:
   ids:
-    - 1AAR_bondsonly
-    - 1AAR_encoded
-    - 1DF6_bondsonly
-    - 1DF6_encoded
-    - 6OQ1_bondsonly
-    - 6OQ1_encoded
+    #- 1AAR_bondsonly
+    #- 1AAR_encoded
+    #- 1DF6_bondsonly
+    #- 1DF6_encoded
+    #- 6OQ1_bondsonly
+    #- 6OQ1_encoded
+    - 8S6W_bondsonly
+    - 8S6W_encoded
   container: /cluster/project/beltrao/shared/alphafold3/images/alphafold3_2e2ffc1.sif
   max_template_date: 1970-01-01
   msas:

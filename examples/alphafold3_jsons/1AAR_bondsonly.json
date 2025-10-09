@@ -1,0 +1,37 @@
+{
+  "dialect": "alphafold3",
+  "version": 2,
+  "name": "1AAR_bondsonly",
+  "sequences": [
+    {
+      "protein": {
+        "id": "A",
+        "sequence": "MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGGHOHHOHHOHHOHHOHHOHHOH"
+      }
+    },
+    {
+      "protein": {
+        "id": "B",
+        "sequence": "MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGGHOHHOHHOHHOHHOHHOHHOHHOH"
+      }
+    }
+  ],
+  "modelSeeds": [
+    1
+  ],
+  "bondedAtomPairs": [
+    [
+      [
+        "B",
+        48,
+        "NZ"
+      ],
+      [
+        "A",
+        76,
+        "C"
+      ]
+    ]
+  ],
+  "userCCD": null
+}

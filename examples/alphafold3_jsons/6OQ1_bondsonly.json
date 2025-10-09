@@ -1,0 +1,55 @@
+{
+  "dialect": "alphafold3",
+  "version": 2,
+  "name": "6OQ1_bondsonly",
+  "sequences": [
+    {
+      "protein": {
+        "id": "A",
+        "sequence": "MQIFVKTLTGRTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGCQLEDGRTLSDYNIQRESTLHLVLRLRGGHOHHOHHOHHOHHOHHOHHOHHOHHOHHOH"
+      }
+    },
+    {
+      "protein": {
+        "id": "C",
+        "sequence": "MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGRQLEDGRTLSDYNIQKESTLHLVLRLRGGHOHHOHHOHHOHHOHHOHHOH"
+      }
+    },
+    {
+      "protein": {
+        "id": "F",
+        "sequence": "MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLHOHHOHHOH"
+      }
+    }
+  ],
+  "modelSeeds": [
+    1
+  ],
+  "bondedAtomPairs": [
+    [
+      [
+        "F",
+        11,
+        "NZ"
+      ],
+      [
+        "A",
+        76,
+        "C"
+      ]
+    ],
+    [
+      [
+        "F",
+        48,
+        "NZ"
+      ],
+      [
+        "C",
+        76,
+        "C"
+      ]
+    ]
+  ],
+  "userCCD": null
+}

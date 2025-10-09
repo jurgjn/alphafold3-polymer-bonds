@@ -1,0 +1,131 @@
+{
+  "dialect": "alphafold3",
+  "version": 2,
+  "name": "6OQ1_encoded",
+  "sequences": [
+    {
+      "protein": {
+        "id": "A",
+        "sequence": "MQIFVKTLTGRTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGCQLEDGRTLSDYNIQRESTLHLVLRLRG"
+      }
+    },
+    {
+      "ligand": {
+        "id": "AA",
+        "ccdCodes": [
+          "GLY"
+        ]
+      }
+    },
+    {
+      "protein": {
+        "id": "AB",
+        "sequence": "HOHHOHHOHHOHHOHHOHHOHHOHHOHHOH"
+      }
+    },
+    {
+      "protein": {
+        "id": "C",
+        "sequence": "MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGRQLEDGRTLSDYNIQKESTLHLVLRLRG"
+      }
+    },
+    {
+      "ligand": {
+        "id": "CA",
+        "ccdCodes": [
+          "GLY"
+        ]
+      }
+    },
+    {
+      "protein": {
+        "id": "CB",
+        "sequence": "HOHHOHHOHHOHHOHHOHHOH"
+      }
+    },
+    {
+      "protein": {
+        "id": "F",
+        "sequence": "MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLHOHHOHHOH"
+      }
+    }
+  ],
+  "modelSeeds": [
+    1
+  ],
+  "bondedAtomPairs": [
+    [
+      [
+        "A",
+        75,
+        "C"
+      ],
+      [
+        "AA",
+        1,
+        "N"
+      ]
+    ],
+    [
+      [
+        "F",
+        11,
+        "NZ"
+      ],
+      [
+        "AA",
+        1,
+        "C"
+      ]
+    ],
+    [
+      [
+        "AA",
+        1,
+        "C"
+      ],
+      [
+        "AB",
+        1,
+        "N"
+      ]
+    ],
+    [
+      [
+        "C",
+        75,
+        "C"
+      ],
+      [
+        "CA",
+        1,
+        "N"
+      ]
+    ],
+    [
+      [
+        "F",
+        48,
+        "NZ"
+      ],
+      [
+        "CA",
+        1,
+        "C"
+      ]
+    ],
+    [
+      [
+        "CA",
+        1,
+        "C"
+      ],
+      [
+        "CB",
+        1,
+        "N"
+      ]
+    ]
+  ],
+  "userCCD": null
+}

@@ -1,0 +1,61 @@
+{
+  "dialect": "alphafold3",
+  "version": 2,
+  "name": "8S6W_bondsonly",
+  "sequences": [
+    {
+      "rna": {
+        "id": "A",
+        "sequence": "UGGAAGAAAUCGAAGAAGAUGAAGAACGCGAAGAAC"
+      }
+    },
+    {
+      "rna": {
+        "id": "B",
+        "sequence": "UGGAAGAAAUCGAAGAAGAUGAAGAACGCGAAGAAC"
+      }
+    },
+    {
+      "rna": {
+        "id": "C",
+        "sequence": "AUCUUCUUCGAUUUCUUCCAGUUCUUCGCGUUCUUC"
+      }
+    },
+    {
+      "rna": {
+        "id": "D",
+        "sequence": "AUCUUCUUCGAUUUCUUCCAGUUCUUCGCGUUCUUC"
+      }
+    }
+  ],
+  "modelSeeds": [
+    1
+  ],
+  "bondedAtomPairs": [
+    [
+      [
+        "C",
+        36,
+        "O3'"
+      ],
+      [
+        "C",
+        1,
+        "P"
+      ]
+    ],
+    [
+      [
+        "D",
+        1,
+        "P"
+      ],
+      [
+        "D",
+        36,
+        "O3'"
+      ]
+    ]
+  ],
+  "userCCD": null
+}
