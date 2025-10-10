@@ -159,19 +159,38 @@ def input_json_sequence_init(type, id, sequence):
         ]))
     ])
 
+_dna_dict = {
+    'DA': 'A',
+    'DC': 'C',
+    'DG': 'G',
+    'DT': 'T',
+    'TGP': 'G',
+}
+
 def input_json_sequence_from_chain(chain):
-    residues = [ Bio.PDB.Polypeptide.protein_letters_3to1.get(residue.resname, residue.resname) for residue in chain.get_residues() ]
-    # Check if residues in sequence are a subset with <=
-    if set(residues) <= {'A', 'C', 'G', 'T'}:
+    # Filter out waters & print het-entities
+    resnames = []
+    for residue in chain.get_residues():
+        if residue.get_id()[0] != 'W':
+            resnames.append(residue.resname)
+            if residue.get_id()[0] != ' ':
+                print(chain.id, residue.resname, residue.get_id())
+
+    # Check if entities are a subset with <=
+    if set(resnames) <= {'DA', 'DC', 'DG', 'DT', 'TGP', 'TTG', 'TTC'}:
         type = 'dna'
-    elif set(residues) <= {'A', 'C', 'G', 'U'}:
+        sequence = ''.join([ _dna_dict.get(resname, '') for resname in resnames ])
+    elif set(resnames) <= {'A', 'C', 'G', 'U'}:
         type = 'rna'
+        sequence = ''.join(resnames)
     else:
         type = 'protein'
+        sequence = ''.join([ Bio.PDB.Polypeptide.protein_letters_3to1.get(resname, '') for resname in resnames ])
+
     return input_json_sequence_init(
         type=type,
         id=chain.id,
-        sequence=''.join(residues),
+        sequence=sequence,
     )
 
 def input_json_from_rcsb(path):
