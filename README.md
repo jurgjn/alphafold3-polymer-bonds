@@ -21,6 +21,10 @@ and
 
 *[6OQ1](https://www.rcsb.org/structure/6OQ1): K11/K48 branched tri-ubiquitin with (left, RMSD=6.157) and without (right, RMSD=9.676) covalent bonds between K11/K48 (orange side chains) and Gly76 (red side chains).*
 
+![8S6W](https://raw.githubusercontent.com/jurgjn/alphafold3-polymer-bonds/main/examples/visualise/8S6W.png)
+
+*[8S6W](https://www.rcsb.org/structure/8S6W): RNA complex with two circular chains with (left, RMSD=9.788) and without (right, RMSD=23.233) covalent bonds to define the circularisation. The model with the explicit circularisation coarsely reproduces the overall shape of the experimental structure. The model without circularisation bonds does not.*
+
 ## Quick start
 Install using `pip`, the main script is called `alphafold3_polymer_bonds`. Use `--bonds_path` to specify a standard AlphaFold 3 input .json with extra polymer bonds in `bondedAtomPairs`. The script will output a modified .json (`--encoded_path encoded_input.json`) that can be used as input for AlphaFold 3.
 
